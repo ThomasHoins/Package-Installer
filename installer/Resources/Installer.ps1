@@ -143,7 +143,7 @@ Function Write-Mif {
     param (
         [string]$MifResultcodes
     )
-    If ($globaL:MifEnabled){
+    If ($globaL:MifEnabled) {
         $MifFilePath = $installer.'PKG-INSTALLER'.STARTUP.MIFPATH
         If ($MifFilePath -eq "") {
             $MifFilePath = "$((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\SMS\Client\Configuration\Client Properties")."NOIDMIF Directory")"
@@ -237,6 +237,7 @@ Function Show-Message {
         }
         $TimeLeft --
     }
+    $MessageBox.Text = $null
     Show-Grid "MainGrid"
 }
 
@@ -272,7 +273,7 @@ Function Invoke-Inventory {
     Try {
         $ExitCode = (Start-Process $InventoryCommandLine -PassThru -Wait -ErrorAction SilentlyContinue).ExitCode
         Write-Log "$LogPath$LogFileName" -LogContent "Inventory finished with exitcode:  $ExitCode"
-        }
+    }
     Catch {
         Write-Log "$LogPath$LogFileName" -LogContent "Error: Inventory could not be started! $error[0].Exception.Message"
     } 
@@ -330,7 +331,7 @@ $Form.Add_ContentRendered( {
             [xml]$installer = Get-Content "$PSScriptRoot\..\Installer.xml"
             Write-Host
         }
-        If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true"){
+        If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true") {
             $MainWindow.Visibility = "Hidden"
             Update-GUI
         }

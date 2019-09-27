@@ -65,6 +65,29 @@
 		<EXE></EXE>															<!-- Process Name -->
 		<MESSAGEBOXTEXT>Bitte schliessen sie das Program</MESSAGEBOXTEXT>	<!-- Text for Check message. You can have multiple lines, check if it fits inside the window-->	
 		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
 		<COUNTDOWNTEXT>Waiting for</COUNTDOWNTEXT>							<!-- Optional text, if Autokill is set to true, this text will be displayed. Timeout is 60 sec. -->
 		<COUNTDOWNUNIT>sec.</COUNTDOWNUNIT>									<!-- Optional unit, if you need a differnt language. Both Messages have english default messages -->
 		<AUTOKILL>true</AUTOKILL>											<!-- true/false, Enables Autokill with a timeout of 60 sec. -->
@@ -81,11 +104,29 @@
     </UNINSTALL_X64>
 
 	<EXIT>
-		<MESSAGEBOX_ACTIVE>false</MESSAGEBOX_ACTIVE> 						<!-- true/false. Enables the Messagebox after installation -->
+		<MESSAGEBOX_ACTIVE>true
+		</MESSAGEBOX_ACTIVE> 						<!-- true/false. Enables the Messagebox after installation -->
 		<TIMEOUT></TIMEOUT> 												<!-- Timeout for the Messagebox -->
 		<AUTOREBOOT>false</AUTOREBOOT>										<!-- Enables automatic reboot -->
 	 	<MESSAGEBOXTEXT>Um die Installation des Programms abzuschliessen ist ein Neustart erforderlich. Dieser wird nicht automatisch durchgeführt!</MESSAGEBOXTEXT>	<!-- Text for Messagebox. You can have multiple lines, check if it fits inside the window-->	
-		<MESSAGEBOXTEXT></MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
+		<MESSAGEBOXTEXT>Viel Text</MESSAGEBOXTEXT> 									<!--Next Line -->
 		<COUNTDOWNTEXT></COUNTDOWNTEXT>										<!-- Optional text, if Autokill is set to true, this text will be displayed. Timeout is 60 sec. -->
 		<COUNTDOWNUNIT></COUNTDOWNUNIT>										<!-- Optional unit, if you need a differnt language. Both Messages have english default messages -->
 		<OSDFLAG_MODE>process</OSDFLAG_MODE> 								<!-- OSD Detect MODE= "registry" , "file" , "process". Will check if we are running in Task Sequence and suppress the Messagebox -->
