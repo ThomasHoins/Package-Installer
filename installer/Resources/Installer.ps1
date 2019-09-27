@@ -297,6 +297,12 @@ $OKButton.Add_Click( {
         Show-Grid "MainGrid"
         $global:Wait = $false
     })
+    
+# List double click
+$PackageList.Add_MouseDoubleClick( {
+        Show-Grid "MainGrid"
+        $global:Wait = $false
+    }) 
 
 #Make sure to stop PS when closing
 $Form.Add_Closing( {
