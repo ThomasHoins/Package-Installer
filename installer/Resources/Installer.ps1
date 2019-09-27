@@ -310,7 +310,7 @@ $Form.Add_ContentRendered( {
             $global:Wait = $true
             ForEach ($InstallerFile in $installerFiles) {
                 [xml]$installertemp = Get-Content $InstallerFile
-                $PackageList.AddChild("$($InstallerFile.Name) - $($installertemp.'PKG-INSTALLER'.PRODUCT.MANUFACTURER) $($installertemp.'PKG-INSTALLER'.PRODUCT.DESCRIPTION) $($installertemp.'PKG-INSTALLER'.PRODUCT.VERSION)")
+                $PackageList.AddChild("$($InstallerFile.Name) - $($installertemp.'PKG-INSTALLER'.PRODUCT.MANUFACTURER) $($installertemp.'PKG-INSTALLER'.PRODUCT.DESCRIPTION) $($installertemp.'PKG-INSTALLER'.PRODUCT.VERSION) ")
             }
             Show-Grid "ListGrid"
     
@@ -321,6 +321,7 @@ $Form.Add_ContentRendered( {
             $SelInstallerfile = $installerFiles[$PackageList.SelectedIndex].FullName
             #load installer.xml
             [xml]$installer = Get-Content $SelInstallerfile
+            $PackageList.Items.Clear()
         }
         ElseIf ($installerFiles.Count -eq 1) {
             #load installer.xml
