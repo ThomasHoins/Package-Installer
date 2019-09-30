@@ -1,5 +1,4 @@
-
-#requires -version 3
+#Requires -Version 3.0
 <#
 .SYNOPSIS
   This Script is made to simplify installations with SCCM 
@@ -33,7 +32,7 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        1.0.13
+    Version:        1.0.14
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
@@ -47,7 +46,7 @@ History:
     1.0.11    20.09.2019    added NOGUI   
     1.0.12    20.09.2019    added Inventory functionality  
     1.0.13    30.09.2019    fixed Reg Key Name and MIF path
-
+    1.0.14    30.09.2019    added dynamic resizing of the window to support long messages
 Known Bugs:
   
 
@@ -144,7 +143,7 @@ Function Write-Mif {
     param (
         [string]$MifResultcodes
     )
-    If ($globaL:MifEnabled){
+    If ($globaL:MifEnabled) {
         $MifFilePath = $installer.'PKG-INSTALLER'.STARTUP.MIFPATH
         If ($MifFilePath -eq "") {
             $MifFilePath = "$((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\SMS\Client\Configuration\Client Properties")."NOIDMIF Directory")"
@@ -181,13 +180,12 @@ Function Write-Mif {
     }
 }
 
-
 Function Write-RegEntry {
     param (
         [string]$MifResultcodes
     )
     $RegPath = "HKLM:\$($installer.'PKG-INSTALLER'.STARTUP.REGISTRYPATH)"
-    $Lang = ($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).Substring(0,3)
+    $Lang = ($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).Substring(0, 3)
     $KeyName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$Lang"
 
     #Write the Registry entry
@@ -239,6 +237,7 @@ Function Show-Message {
         }
         $TimeLeft --
     }
+    $MessageBox.Text = $null
     Show-Grid "MainGrid"
 }
 
@@ -274,7 +273,7 @@ Function Invoke-Inventory {
     Try {
         $ExitCode = (Start-Process $InventoryCommandLine -PassThru -Wait -ErrorAction SilentlyContinue).ExitCode
         Write-Log "$LogPath$LogFileName" -LogContent "Inventory finished with exitcode:  $ExitCode"
-        }
+    }
     Catch {
         Write-Log "$LogPath$LogFileName" -LogContent "Error: Inventory could not be started! $error[0].Exception.Message"
     } 
@@ -298,12 +297,19 @@ $OKButton.Add_Click( {
         Show-Grid "MainGrid"
         $global:Wait = $false
     })
+    
+# List double click
+$PackageList.Add_MouseDoubleClick( {
+        Show-Grid "MainGrid"
+        $global:Wait = $false
+    }) 
 
 #Make sure to stop PS when closing
 $Form.Add_Closing( {
         Exit
     })
-
+    
+    
 #When the Form is loaded, this will be executed
 $Form.Add_ContentRendered( {
         #Check for multiple installer XML files
@@ -322,6 +328,7 @@ $Form.Add_ContentRendered( {
             $SelInstallerfile = $installerFiles[$PackageList.SelectedIndex].FullName
             #load installer.xml
             [xml]$installer = Get-Content $SelInstallerfile
+            $PackageList.Items.Clear()
         }
         ElseIf ($installerFiles.Count -eq 1) {
             #load installer.xml
@@ -332,7 +339,7 @@ $Form.Add_ContentRendered( {
             [xml]$installer = Get-Content "$PSScriptRoot\..\Installer.xml"
             Write-Host
         }
-        If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true"){
+        If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true") {
             $MainWindow.Visibility = "Hidden"
             Update-GUI
         }
