@@ -15,3 +15,7 @@
     /r for repair
   XMLPath:
     path to the intaller XML  
+
+
+The ServiceUI.exe is needed to run the powershell script in System Context and still be able to show a UI in User context. It has to be fetched from the SCCM Server ...\OSD\Packages\Microsoft_Deployment_Toolkit_Files_2013\Tools\x64.
+And it has to be placed inside the Resources folder.
