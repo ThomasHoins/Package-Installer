@@ -8,22 +8,22 @@
 		<REQUIREDRIVE>false</REQUIREDRIVE>									<!-- true/false is not implemented-->
 		<REQUIREADMINRIGHTS>false</REQUIREADMINRIGHTS>						<!-- true/false self explaining-->
 		<CHECKPENDINGFILES>false</CHECKPENDINGFILES>   						<!-- true/false is not implemented-->
-		<SOURCEDIR></SOURCEDIR>												<!-- true/false is not implemented-->
+		<SOURCEDIR></SOURCEDIR>												<!-- true/false Differnt Source Dir, Default is the directory of Installer.XML. is not implemented-->
 
 		<MIFFILE>true</MIFFILE>												<!-- true/false Create a MIF file-->
-		<MIFPATH>C:\Users\tom\Desktop\installer\</MIFPATH>					<!-- Path/Empty Path for the MIF file if empty or missing, we will use the defaultfor SCCM MIF-->
+		<MIFPATH></MIFPATH>													<!-- Path/Empty Path for the MIF file. No Environment Substitution here!. If empty or missing, we will use the defaultfor SCCM MIF-->
 
 		<LOGFILE>true</LOGFILE>												<!-- true/false Create a LOG file-->
-		<LOGPATH>C:\Program Files\support\logs\</LOGPATH>					<!-- Path for the LOG file, mandatory if you set LOGFILE to true, otherwise it would try to write, where it is running-->
+		<LOGPATH>C:\Temp\support\logs\</LOGPATH>							<!-- Path for the LOG file. No Environment Substitution here!. Mandatory if you set LOGFILE to true, otherwise it would try to write, where it is running-->
 		<LOGFILENAME>XXX_Test Log File.log</LOGFILENAME>					<!-- LOG file name, mandatory if you set LOGFILE to true -->
 
-		<REGISTRY>true</REGISTRY>											<!-- true/false Log installation to Registry. Not implemented -->
-		<REGISTRYPATH>Software\Support\Installed Packages\</REGISTRYPATH>   <!-- only local Machine Path, Path to log to. Not implemented -->
+		<REGISTRY>true</REGISTRY>											<!-- true/false Log installation to Registry -->
+		<REGISTRYPATH>Software\Support\Installed Packages\</REGISTRYPATH>   <!-- only local Machine Path, Path to log to -->
 		
-        <NOGUI>false</NOGUI>												<!-- true/false Show Installation Window.  Not implemented -->
+        <NOGUI>false</NOGUI>												<!-- true/false Show Installation Window.  Not good implemented, will blink for 0,1s -->
 		<INTERACTIVE>false</INTERACTIVE>									<!-- true/false run the Installation in foreground so the user can interact. Not implemented -->
-		<INVENTORY>%programfiles%\support\scripts\inventory.cmd</INVENTORY> <!-- Path to inventory executable (%programfiles%\support\scripts\inventory.cmd), Will run the executable, to create a new inventory entry.  Not implemented  -->
-		<UNINSTALLENABLED>true</UNINSTALLENABLED>							<!-- true/false Allow uninstallation. Not implemented -->
+		<INVENTORY>%programfiles%\support\scripts\inventory.cmd</INVENTORY> <!-- Path to inventory executable (%programfiles%\support\scripts\inventory.cmd), Will run the executable, to create a new inventory entry.-->
+		<UNINSTALLENABLED>true</UNINSTALLENABLED>							<!-- true/false/empty  Allow uninstallation, default is true.-->
 		
 		<CHECKMSIInstaller>false</CHECKMSIInstaller> 						<!-- Installer must run under admin rights!. Not implemented -->
 		<CHECKMSIInstallerRetries>4</CHECKMSIInstallerRetries> 				<!-- Number of retries. Not implemented -->
@@ -47,8 +47,8 @@
 	</SETUP>
     
 	<SETUP_X64>
-		<EXE>"notepad.exe" %userprofile%\setup.txt</EXE>					<!-- Executable with Parameters -->
-		<EXE>bla</EXE>
+		<EXE RC="false">ping.exe localhost -n 5</EXE>						<!-- Executable with Parameters -->
+		<EXE>ping.exe localhost -n 3</EXE>
 	</SETUP_X64>
 
 	<REPAIR>
