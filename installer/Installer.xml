@@ -20,6 +20,8 @@
 		<REGISTRY>true</REGISTRY>											<!-- true/false Log installation to Registry -->
 		<REGISTRYPATH>Software\Support\Installed Packages\</REGISTRYPATH>   <!-- only local Machine Path, Path to log to -->
 		
+		<USEAPPICON>true</USEAPPICON>										<!-- use the App Icon, if \Resourced\AppIcon.png exists  -->
+		
         <NOGUI>false</NOGUI>												<!-- true/false Show Installation Window.  Not good implemented, will blink for 0,1s -->
 		<INTERACTIVE>false</INTERACTIVE>									<!-- true/false run the Installation in foreground so the user can interact. Not implemented -->
 		<INVENTORY>%programfiles%\support\scripts\inventory.cmd</INVENTORY> <!-- Path to inventory executable (%programfiles%\support\scripts\inventory.cmd), Will run the executable, to create a new inventory entry.-->

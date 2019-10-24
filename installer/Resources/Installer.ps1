@@ -47,6 +47,7 @@ History:
     1.0.12    20.09.2019    added Inventory functionality  
     1.0.13    30.09.2019    fixed Reg Key Name and MIF path
     1.0.14    30.09.2019    added dynamic resizing of the window to support long messages
+    1.1.1     24.10.2019    Minor GUI fixes, Fix at Installer.cmd, New Logo handling, Error Handling for MIF and Reg creation
 Known Bugs:
   
 
@@ -113,7 +114,6 @@ Else {
 #----------------------------------------------------------[Declarations]----------------------------------------------------------
 
 $MainWindow.Icon = "$PSScriptRoot\LogoSmall.png"      #load Icon
-$Logo.Source = "$PSScriptRoot\Logo.png"          #load Logo
 
 #-----------------------------------------------------------[Functions]------------------------------------------------------------
 
@@ -148,36 +148,42 @@ Function Write-Mif {
         If ($MifFilePath -eq "") {
             $MifFilePath = "$((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\SMS\Client\Configuration\Client Properties")."NOIDMIF Directory")"
         }
-
         $MifFileName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).mif"
         If (($installer.'PKG-INSTALLER'.STARTUP.MIFFILE -eq "true") -and ($ExecutionString -like "SETUP*")) {
-            New-Item -ItemType "directory" -Path $MifFilePath -Force
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Component" 
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "NAME = ""Workstation""" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Group NAME = ""Installed Package"" ID = 1 CLASS = ""PACKAGE""" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Description"" ID = 1 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION)"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Version"" ID = 2 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.VERSION)"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Manufacturer"" ID = 3 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER)"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Language"" ID = 4 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE)"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Package Version"" ID = 5 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.PACKAGEVERSION)"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Package Number"" ID = 6 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Install Account"" ID = 7 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($myWindowsPrincipal.Identity.Name)"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Installation Time"" ID = 8 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$(Get-Date -Format "yyyy-MM-dd HH-mm-ss")"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Result Codes"" ID = 9 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$MifResultcodes"" End Attribute" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "End Group" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-            Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "End Component" -Append
-            Write-Log "$LogPath$LogFileName" -LogContent "MIF file "$MifFilePath\$MifFileName" has been created"
+            $Error.Clear()
+            Try{
+                New-Item -ItemType "directory" -Path $MifFilePath -Force -ErrorAction Stop
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Component" 
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "NAME = ""Workstation""" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Group NAME = ""Installed Package"" ID = 1 CLASS = ""PACKAGE""" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Description"" ID = 1 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION)"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Version"" ID = 2 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.VERSION)"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Manufacturer"" ID = 3 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER)"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Language"" ID = 4 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE)"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Package Version"" ID = 5 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.PACKAGEVERSION)"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Package Number"" ID = 6 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Install Account"" ID = 7 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($myWindowsPrincipal.Identity.Name)"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Installation Time"" ID = 8 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$(Get-Date -Format "yyyy-MM-dd HH-mm-ss")"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Result Codes"" ID = 9 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$MifResultcodes"" End Attribute" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "End Group" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
+                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "End Component" -Append
+                Write-Log "$LogPath$LogFileName" -LogContent "MIF file ""$MifFilePath\$MifFileName"" has been created"
+                }
+            Catch {Write-Log "$LogPath$LogFileName" -LogContent "Error: MIF file ""$MifFilePath\$MifFileName"" could not be created: $Error"}
+            }
+        If ($ExecutionString -like "UNINSTALL*") {
+            #Delete the MIF file
+            Try{
+                Remove-Item $MifFilePath$MifFileName -Force -ErrorAction SilentlyContinue
+                Write-Log "$LogPath$LogFileName" -LogContent "MIF file $MifFilePath$MifFileName has been removed"
+                }
+            Catch{Write-Log "$LogPath$LogFileName" -LogContent "ERROR: MIF file $MifFilePath$MifFileName could bot be removed"}
+            }
         }
-    }
-    If ($ExecutionString -like "UNINSTALL*") {
-        #Delete the MIF file
-        Remove-Item $MifFilePath$MifFileName -Force -ErrorAction SilentlyContinue
-        Write-Log "$LogPath$LogFileName" -LogContent "MIF file $MifFilePath$MifFileName has been removed"
-    }
 }
 
 Function Write-RegEntry {
@@ -188,25 +194,32 @@ Function Write-RegEntry {
     $Lang = ($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).Substring(0, 3)
     $KeyName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$Lang"
 
-    #Write the Registry entry
+    #Write/remove the Registry entry
     If (($installer.'PKG-INSTALLER'.STARTUP.REGISTRY -eq "true") -and ($ExecutionString -like "SETUP*")) {
-        New-Item -Path $RegPath -Name $KeyName -Force
-        New-ItemProperty -Path $RegPath$KeyName -Name "Description" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION
-        New-ItemProperty -Path $RegPath$KeyName -Name "Version" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.VERSION
-        New-ItemProperty -Path $RegPath$KeyName -Name "Manufacturer" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER
-        New-ItemProperty -Path $RegPath$KeyName -Name "Language" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE
-        New-ItemProperty -Path $RegPath$KeyName -Name "Package Version" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.PACKAGEVERSION
-        New-ItemProperty -Path $RegPath$KeyName -Name "Package Number" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER
-        New-ItemProperty -Path $RegPath$KeyName -Name "Installation Time" -PropertyType String -Value  $(Get-Date -Format "yyyy-MM-dd HH-mm-ss")
-        New-ItemProperty -Path $RegPath$KeyName -Name "Install Account" -PropertyType String -Value $myWindowsPrincipal.Identity.Name
-        New-ItemProperty -Path $RegPath$KeyName -Name "Result Codes" -PropertyType String -Value $MifResultcodes
-        Write-Log "$LogPath$LogFileName" -LogContent "Registry Entry $($installer.'PKG-INSTALLER'.PRODUCT.REGISTRYPATH) has been created"
-    }
+        $Error.Clear()
+        Try{
+            New-Item -Path $RegPath -Name $KeyName -Force -ErrorAction Stop
+            New-ItemProperty -Path $RegPath$KeyName -Name "Description" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION
+            New-ItemProperty -Path $RegPath$KeyName -Name "Version" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.VERSION
+            New-ItemProperty -Path $RegPath$KeyName -Name "Manufacturer" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER
+            New-ItemProperty -Path $RegPath$KeyName -Name "Language" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE
+            New-ItemProperty -Path $RegPath$KeyName -Name "Package Version" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.PACKAGEVERSION
+            New-ItemProperty -Path $RegPath$KeyName -Name "Package Number" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER
+            New-ItemProperty -Path $RegPath$KeyName -Name "Installation Time" -PropertyType String -Value  $(Get-Date -Format "yyyy-MM-dd HH-mm-ss")
+            New-ItemProperty -Path $RegPath$KeyName -Name "Install Account" -PropertyType String -Value $myWindowsPrincipal.Identity.Name
+            New-ItemProperty -Path $RegPath$KeyName -Name "Result Codes" -PropertyType String -Value $MifResultcodes
+            Write-Log "$LogPath$LogFileName" -LogContent "Registry Entry ""$RegPath$KeyName"" has been created"
+            }
+            Catch {Write-Log "$LogPath$LogFileName" -LogContent "Error: Registry Entry ""$RegPath$KeyName"" could not be created: $Error"}
+        }
     If ($ExecutionString -like "UNINSTALL*") {
-        #Delete the Registry entry
-        Remove-Item "$RegPath\$KeyName" -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Log "$LogPath$LogFileName" -LogContent "Registry Entry $RegPath\$KeyName has been removed"
-    }
+        #Remove the Registry entry
+        Try{
+            Remove-Item "$RegPath$KeyName" -Recurse -Force -ErrorAction Stop
+            Write-Log "$LogPath$LogFileName" -LogContent "Registry Entry ""$RegPath$KeyName"" has been removed"
+            }
+        Catch {Write-Log "$LogPath$LogFileName" -LogContent "Error: Registry Entry ""$RegPath$KeyName"" could not be removed"}
+        }
 }
 
 # Show a Dialogue
@@ -306,7 +319,7 @@ $PackageList.Add_MouseDoubleClick( {
 
 #Make sure to stop PS when closing
 $Form.Add_Closing( {
-        Exit
+        #Exit
     })
     
     
@@ -339,6 +352,18 @@ $Form.Add_ContentRendered( {
             [xml]$installer = Get-Content "$PSScriptRoot\..\Installer.xml"
             Write-Host
         }
+        #load Logo
+        If ($installer.'PKG-INSTALLER'.STARTUP.USEAPPICON -eq "true"){
+            If (Test-Path "$PSScriptRoot\AppIcon.png"){
+                $Logo.Source = "$PSScriptRoot\AppIcon.png"}
+                Else{
+                    $Logo.Source = "$PSScriptRoot\Logo.png"
+                }
+            }
+        Else{
+            $Logo.Source = "$PSScriptRoot\Logo.png"          
+            }
+
         If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true") {
             $MainWindow.Visibility = "Hidden"
             Update-GUI
@@ -596,10 +621,12 @@ $Form.Add_ContentRendered( {
         }  
 
         # End of the Main Program  
+        $Form.Close()
         Exit $Finalresultcode
     })
 
 
 #Show the Main Window
 $Form.ShowDialog() | out-null
+$Form.Close()
 Exit
