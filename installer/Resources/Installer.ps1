@@ -86,6 +86,10 @@ $myWindowsPrincipal = new-object System.Security.Principal.WindowsPrincipal($myW
 # Get the security principal for the Administrator role
 $adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
 
+# Get SourceDir
+$SourceDir = (Get-Item "$PSScriptRoot\..\").FullName
+$SourceDir = $SourceDir.Substring(0, $Sourcedir.Length - 1)
+
 #Get Main Window content
 [xml]$xaml = Get-Content "$PSScriptRoot\Main.xaml"
 
@@ -151,7 +155,7 @@ Function Write-Mif {
         $MifFileName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).mif"
         If (($installer.'PKG-INSTALLER'.STARTUP.MIFFILE -eq "true") -and ($ExecutionString -like "SETUP*")) {
             $Error.Clear()
-            Try{
+            Try {
                 New-Item -ItemType "directory" -Path $MifFilePath -Force -ErrorAction Stop
                 Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Component" 
                 Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "NAME = ""Workstation""" -Append
@@ -172,18 +176,18 @@ Function Write-Mif {
                 Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
                 Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "End Component" -Append
                 Write-Log "$LogPath$LogFileName" -LogContent "MIF file ""$MifFilePath\$MifFileName"" has been created"
-                }
-            Catch {Write-Log "$LogPath$LogFileName" -LogContent "Error: MIF file ""$MifFilePath\$MifFileName"" could not be created: $Error"}
             }
+            Catch { Write-Log "$LogPath$LogFileName" -LogContent "Error: MIF file ""$MifFilePath\$MifFileName"" could not be created: $Error" }
+        }
         If ($ExecutionString -like "UNINSTALL*") {
             #Delete the MIF file
-            Try{
+            Try {
                 Remove-Item $MifFilePath$MifFileName -Force -ErrorAction SilentlyContinue
                 Write-Log "$LogPath$LogFileName" -LogContent "MIF file $MifFilePath$MifFileName has been removed"
-                }
-            Catch{Write-Log "$LogPath$LogFileName" -LogContent "ERROR: MIF file $MifFilePath$MifFileName could bot be removed"}
             }
+            Catch { Write-Log "$LogPath$LogFileName" -LogContent "ERROR: MIF file $MifFilePath$MifFileName could bot be removed" }
         }
+    }
 }
 
 Function Write-RegEntry {
@@ -197,7 +201,7 @@ Function Write-RegEntry {
     #Write/remove the Registry entry
     If (($installer.'PKG-INSTALLER'.STARTUP.REGISTRY -eq "true") -and ($ExecutionString -like "SETUP*")) {
         $Error.Clear()
-        Try{
+        Try {
             New-Item -Path $RegPath -Name $KeyName -Force -ErrorAction Stop
             New-ItemProperty -Path $RegPath$KeyName -Name "Description" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION
             New-ItemProperty -Path $RegPath$KeyName -Name "Version" -PropertyType String -Value $installer.'PKG-INSTALLER'.PRODUCT.VERSION
@@ -209,17 +213,17 @@ Function Write-RegEntry {
             New-ItemProperty -Path $RegPath$KeyName -Name "Install Account" -PropertyType String -Value $myWindowsPrincipal.Identity.Name
             New-ItemProperty -Path $RegPath$KeyName -Name "Result Codes" -PropertyType String -Value $MifResultcodes
             Write-Log "$LogPath$LogFileName" -LogContent "Registry Entry ""$RegPath$KeyName"" has been created"
-            }
-            Catch {Write-Log "$LogPath$LogFileName" -LogContent "Error: Registry Entry ""$RegPath$KeyName"" could not be created: $Error"}
         }
+        Catch { Write-Log "$LogPath$LogFileName" -LogContent "Error: Registry Entry ""$RegPath$KeyName"" could not be created: $Error" }
+    }
     If ($ExecutionString -like "UNINSTALL*") {
         #Remove the Registry entry
-        Try{
+        Try {
             Remove-Item "$RegPath$KeyName" -Recurse -Force -ErrorAction Stop
             Write-Log "$LogPath$LogFileName" -LogContent "Registry Entry ""$RegPath$KeyName"" has been removed"
-            }
-        Catch {Write-Log "$LogPath$LogFileName" -LogContent "Error: Registry Entry ""$RegPath$KeyName"" could not be removed"}
         }
+        Catch { Write-Log "$LogPath$LogFileName" -LogContent "Error: Registry Entry ""$RegPath$KeyName"" could not be removed" }
+    }
 }
 
 # Show a Dialogue
@@ -353,16 +357,17 @@ $Form.Add_ContentRendered( {
             Write-Host
         }
         #load Logo
-        If ($installer.'PKG-INSTALLER'.STARTUP.USEAPPICON -eq "true"){
-            If (Test-Path "$PSScriptRoot\AppIcon.png"){
-                $Logo.Source = "$PSScriptRoot\AppIcon.png"}
-                Else{
-                    $Logo.Source = "$PSScriptRoot\Logo.png"
-                }
+        If ($installer.'PKG-INSTALLER'.STARTUP.USEAPPICON -eq "true") {
+            If (Test-Path "$PSScriptRoot\AppIcon.png") {
+                $Logo.Source = "$PSScriptRoot\AppIcon.png"
             }
-        Else{
+            Else {
+                $Logo.Source = "$PSScriptRoot\Logo.png"
+            }
+        }
+        Else {
             $Logo.Source = "$PSScriptRoot\Logo.png"          
-            }
+        }
 
         If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true") {
             $MainWindow.Visibility = "Hidden"
@@ -530,6 +535,10 @@ $Form.Add_ContentRendered( {
         $CommandLines = $($installer.'PKG-INSTALLER'.$ExecutionString.EXE)
         $PackageCount = $CommandLines.Count
         ForEach ($Line In $CommandLines) {
+                  
+            $Line = $Line -ireplace ('%SourceDir%', $SourceDir)
+            $Line = $Line -ireplace ('%LogPath%', $LogPath)
+
             If ($Line.InnerXML -ne $null) {
                 $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line.InnerXML) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
                 $WriteRC = Switch ($Line.RC) {
