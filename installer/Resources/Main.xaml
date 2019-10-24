@@ -24,16 +24,16 @@
 
         <Grid Name="ListGrid" Visibility="Hidden">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="20" />
+                <RowDefinition/>
+                <RowDefinition Height="38" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="70"/>
             </Grid.ColumnDefinitions>
             <ListBox Name="PackageList"  FontSize="14" Grid.Row="0" Grid.ColumnSpan="2" BorderThickness="0"/>
-            <Button Name = "CancelButton" Content = "Cancel" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom"  HorizontalAlignment="Center" Width="50"/>
-            <Button Name = "OKButton" Content = "OK" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="50"/>
+            <Button Name = "CancelButton" Content = "Cancel" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom"  HorizontalAlignment="Center" Width="50" Height="19.96" Margin="10,0,10,10" RenderTransformOrigin="0.54,-0.754"/>
+            <Button Name = "OKButton" Content = "OK" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="50" Height="19.96" Margin="0,0,0,10"/>
         </Grid>
 
         <Grid Name="MessageGrid" Visibility="Hidden">
