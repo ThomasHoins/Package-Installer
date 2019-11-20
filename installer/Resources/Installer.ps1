@@ -32,22 +32,26 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        1.0.14
+    Version:        2.1.2
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
     Purpose/Change: Initial script development
 
 History:
-    1.0.0     16.09.2019    Initial Version
-    1.0.8     18.09.2019    Added Functionality
-    1.0.9     20.09.2019    Added RC functionality, added RegEntry Function
-    1.0.10    20.09.2019    fixed some bugs 
-    1.0.11    20.09.2019    added NOGUI   
-    1.0.12    20.09.2019    added Inventory functionality  
-    1.0.13    30.09.2019    fixed Reg Key Name and MIF path
-    1.0.14    30.09.2019    added dynamic resizing of the window to support long messages
-    1.1.1     24.10.2019    Minor GUI fixes, Fix at Installer.cmd, New Logo handling, Error Handling for MIF and Reg creation
+    2.0.0     16.09.2019    Initial Version
+    2.0.8     18.09.2019    Added Functionality
+    2.0.9     20.09.2019    Added RC functionality, added RegEntry Function
+    2.0.10    20.09.2019    fixed some bugs 
+    2.0.11    20.09.2019    added NOGUI   
+    2.0.12    20.09.2019    added Inventory functionality  
+    2.0.13    30.09.2019    fixed Reg Key Name and MIF path
+    2.0.14    30.09.2019    added dynamic resizing of the window to support long messages
+    2.1.0     24.10.2019    Minor GUI fixes, Fix at Installer.cmd, New Logo handling, Error Handling for MIF and Reg creation
+    2.1.1     24.10.2019    fixed %sourcedir% and %logdir% issue (MB)
+    2.1.2     20.11.2019    fixed Version Number, <REQUIREADMINRIGHS> working as expected now (TH)
+    2.1.3     20.11.2019    Minor enhancements to the main installation routine (TH)
+
 Known Bugs:
   
 
@@ -452,7 +456,7 @@ $Form.Add_ContentRendered( {
         Write-Log "$LogPath$LogFileName" -LogContent "OS Architecture matches Required OS: $OSMatch"
         Write-Log "$LogPath$LogFileName" -LogContent "x64 Setup block found: $X64SetupExists"
         Write-Log "$LogPath$LogFileName" -LogContent "Calling command line: $PSCommandPath $Option $XMLPath"
-        If (($RequireAdmin -eq $true) -and ($myWindowsPrincipal.IsInRole($adminRole) -eq $true)) {
+        If ($RequireAdmin -and ($RequireAdmin -ne $myWindowsPrincipal.IsInRole($adminRole))) {
             Write-Log "$LogPath$LogFileName" -LogContent "Required Admin rigths not available, stopping!"
             $Form.Close()
             Exit
@@ -535,11 +539,9 @@ $Form.Add_ContentRendered( {
         $CommandLines = $($installer.'PKG-INSTALLER'.$ExecutionString.EXE)
         $PackageCount = $CommandLines.Count
         ForEach ($Line In $CommandLines) {
-                  
             $Line = $Line -ireplace ('%SourceDir%', $SourceDir)
             $Line = $Line -ireplace ('%LogPath%', $LogPath)
-
-            If ($Line.InnerXML -ne $null) {
+            If ($Line.InnerXML) {
                 $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line.InnerXML) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
                 $WriteRC = Switch ($Line.RC) {
                     "true" { $true }
@@ -547,7 +549,7 @@ $Form.Add_ContentRendered( {
                     default { $true }
                 }
             }
-            Else {
+            ElseIf($Line) {
                 $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
                 $WriteRC = $true
             }
@@ -555,6 +557,7 @@ $Form.Add_ContentRendered( {
             $Progress.Value = ($x / $PackageCount) * 100
             Update-GUI
             $error.clear()
+            $ExitCode = 1
             Try {
                 If ($CommandLine[1..9] -ne "") {
                     $ExitCode = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue).ExitCode
