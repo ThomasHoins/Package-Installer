@@ -36,11 +36,11 @@
 
 	<PRODUCT>																<!-- Product Information, mostly for logging -->	
 		<DESCRIPTION>Installer Test</DESCRIPTION>						
-		<MANUFACTURER>Tom</MANUFACTURER>					
+		<MANUFACTURER>Vendor</MANUFACTURER>					
 		<LANGUAGE>English</LANGUAGE>							
 		<VERSION>1.10.0</VERSION>								
 		<PACKAGEVERSION>1.0</PACKAGEVERSION>						
-		<ASSETNUMBER>0000</ASSETNUMBER>						
+		<ASSETNUMBER>DG-0000</ASSETNUMBER>						
 	</PRODUCT>
 
 	<SETUP>
@@ -49,8 +49,7 @@
 	</SETUP>
     
 	<SETUP_X64>
-		<EXE RC="false">ping.exe localhost -n 5</EXE>						<!-- Executable with Parameters -->
-		<EXE>ping.exe localhost -n 3</EXE>
+		<EXE>ping.exe localhost -n 3</EXE>									<!-- Executable with Parameters -->
 		<EXE></EXE>
 	</SETUP_X64>
 
@@ -64,7 +63,7 @@
 	</REPAIR_X64>
 		
 	<CHECK>
-		<EXE>notepad</EXE>													<!-- Process Name. The Script will check for a running process with this name, if the user presses OK 5x, the process will be killed -->
+		<EXE></EXE>															<!-- Process Name. The Script will check for a running process with this name, if the user presses OK 5x, the process will be killed -->
 		<EXE></EXE>															<!-- Process Name -->
 		<MESSAGEBOXTEXT>Bitte schliessen sie das Program</MESSAGEBOXTEXT>	<!-- Text for Check message. You can have multiple lines, check if it fits inside the window-->	
 		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
@@ -74,7 +73,7 @@
 	</CHECK>
 
 	<UNINSTALL>
-		<EXE RC="true" RE="0" >"C:\Windows\notepad.exe" c:\temp\uninstall.txt</EXE>		<!-- Executable with Parameters. RC="false" prevents the result codes. RE: Retry. RC and RE are not yet implemented.-->
+		<EXE RC="true" RE="0" ></EXE>		<!-- Executable with Parameters. RC="false" prevents the result codes. RE: Retry. RC and RE are not yet implemented.-->
 		<EXE></EXE>															<!-- Executable with Parameters -->
 	</UNINSTALL>
 	

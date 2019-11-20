@@ -400,7 +400,7 @@ $Form.Add_ContentRendered( {
         }
         $LogPath = $installer.'PKG-INSTALLER'.STARTUP.LOGPATH
         $LogFileName = $installer.'PKG-INSTALLER'.STARTUP.LOGFILENAME
-        $SCCMInstallerVersion = "2.0.0"
+        $SCCMInstallerVersion = "2.1.3"
         $XMLVersion = $installer.'PKG-INSTALLER'.STARTUP.XMLVERSION
         $LoggedOnUserName = (Get-WmiObject -Class win32_computersystem -ComputerName $env:COMPUTERNAME).UserName
         $OSArchitecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
