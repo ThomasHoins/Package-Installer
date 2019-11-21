@@ -32,7 +32,7 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        2.1.2
+    Version:        2.1.4
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
@@ -51,6 +51,7 @@ History:
     2.1.1     24.10.2019    fixed %sourcedir% and %logdir% issue (MB)
     2.1.2     20.11.2019    fixed Version Number, <REQUIREADMINRIGHS> working as expected now (TH)
     2.1.3     20.11.2019    Minor enhancements to the main installation routine (TH)
+    2.1.4     21.11.2019    Changed installation routine (TH)
 
 Known Bugs:
   
@@ -63,6 +64,7 @@ Known Bugs:
 #>
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
+$SCCMInstallerVersion = "2.1.4"
 
 Param(
     [ValidateSet("/i", "/u", "/r")]
@@ -400,7 +402,6 @@ $Form.Add_ContentRendered( {
         }
         $LogPath = $installer.'PKG-INSTALLER'.STARTUP.LOGPATH
         $LogFileName = $installer.'PKG-INSTALLER'.STARTUP.LOGFILENAME
-        $SCCMInstallerVersion = "2.1.3"
         $XMLVersion = $installer.'PKG-INSTALLER'.STARTUP.XMLVERSION
         $LoggedOnUserName = (Get-WmiObject -Class win32_computersystem -ComputerName $env:COMPUTERNAME).UserName
         $OSArchitecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
@@ -541,6 +542,7 @@ $Form.Add_ContentRendered( {
         ForEach ($Line In $CommandLines) {
             $Line = $Line -ireplace ('%SourceDir%', $SourceDir)
             $Line = $Line -ireplace ('%LogPath%', $LogPath)
+            $CommandLine = $null
             If ($Line.InnerXML) {
                 $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line.InnerXML) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
                 $WriteRC = Switch ($Line.RC) {
@@ -553,21 +555,22 @@ $Form.Add_ContentRendered( {
                 $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
                 $WriteRC = $true
             }
-            Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
+            If($CommandLine) {Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"}
             $Progress.Value = ($x / $PackageCount) * 100
             Update-GUI
-            $error.clear()
             $ExitCode = 1
             Try {
                 If ($CommandLine[1..9] -ne "") {
+                    $error.clear()
                     $ExitCode = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue).ExitCode
                 }
-                Else {
+                ElseIf($CommandLine) {
+                    $error.clear()
                     $ExitCode = (Start-Process $CommandLine[0] -PassThru -Wait -ErrorAction SilentlyContinue).ExitCode
                 }
                 Write-Log "$LogPath$LogFileName" -LogContent "Application finished with exitcode:  $ExitCode"
                 If ($WriteRC) { $ExitCodes = $ExitCodes + $ExitCode + ";" }
-                If ($ExitCodes -gt $Finalresultcode) { $Finalresultcode = $ExitCodes }
+                If ($ExitCode -gt $Finalresultcode) { $Finalresultcode = $ExitCode }
             }
             Catch {
                 Write-Log "$LogPath$LogFileName" -LogContent "Error: Application could not be started! $error[0].Exception.Message"
@@ -575,8 +578,10 @@ $Form.Add_ContentRendered( {
             $x++
         }
         Write-Log "$LogPath$LogFileName" -LogContent "Installer Result Codes: $ExitCodes"
-        Write-Mif $ExitCodes
-        Write-RegEntry $ExitCodes
+        If($Finalresultcode -in {0,1707,3010,1641,1618}){
+            Write-Mif $ExitCodes
+            Write-RegEntry $ExitCodes
+            }
         Invoke-Inventory
 
 
