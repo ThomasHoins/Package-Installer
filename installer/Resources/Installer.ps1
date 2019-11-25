@@ -561,9 +561,8 @@ $Form.Add_ContentRendered( {
                 $CommandLine = $CommandLine -ireplace ('%LogPath%', $LogPath)     
                 $WriteRC = $true
             }
-            Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
             If($CommandLine) {
-                #Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
+                Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
                 $Progress.Value = ($x / $PackageCount) * 100
                 Update-GUI
                 $Return = $null
