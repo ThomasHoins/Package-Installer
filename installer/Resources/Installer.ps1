@@ -32,7 +32,7 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        2.1.4
+    Version:        2.1.5
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
@@ -52,6 +52,7 @@ History:
     2.1.2     20.11.2019    fixed Version Number, <REQUIREADMINRIGHS> working as expected now (TH)
     2.1.3     20.11.2019    Minor enhancements to the main installation routine (TH)
     2.1.4     21.11.2019    Changed installation routine (TH)
+    2.1.5     25.11.2019    Removed a Bug with the MIF file name from Write-Mif (TH)
 
 Known Bugs:
   
@@ -64,7 +65,7 @@ Known Bugs:
 #>
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
-$SCCMInstallerVersion = "2.1.4"
+$SCCMInstallerVersion = "2.1.5"
 
 Param(
     [ValidateSet("/i", "/u", "/r")]
@@ -188,10 +189,10 @@ Function Write-Mif {
         If ($ExecutionString -like "UNINSTALL*") {
             #Delete the MIF file
             Try {
-                Remove-Item $MifFilePath$MifFileName -Force -ErrorAction SilentlyContinue
-                Write-Log "$LogPath$LogFileName" -LogContent "MIF file $MifFilePath$MifFileName has been removed"
+                Remove-Item "$MifFilePath\$MifFileName" -Force -ErrorAction SilentlyContinue
+                Write-Log "$LogPath$LogFileName" -LogContent "MIF file ""$MifFilePath\$MifFileName"" has been removed"
             }
-            Catch { Write-Log "$LogPath$LogFileName" -LogContent "ERROR: MIF file $MifFilePath$MifFileName could bot be removed" }
+            Catch { Write-Log "$LogPath$LogFileName" -LogContent "ERROR: MIF file ""$MifFilePath\$MifFileName"" could bot be removed" }
         }
     }
 }
