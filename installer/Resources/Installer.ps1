@@ -53,7 +53,7 @@ History:
     2.1.3     20.11.2019    Minor enhancements to the main installation routine (TH)
     2.1.4     21.11.2019    Changed installation routine (TH)
     2.1.5     25.11.2019    Removed a Bug with the MIF file name from Write-Mif (TH)
-    2.1.6     25.11.2019    Bug fix installer routine (TH)
+    2.1.6     25.11.2019    Bug fixes installer routine (TH)
 
 Known Bugs:
   
@@ -544,11 +544,11 @@ $Form.Add_ContentRendered( {
         $CommandLines = $($installer.'PKG-INSTALLER'.$ExecutionString.EXE)
         $PackageCount = $CommandLines.Count
         ForEach ($Line In $CommandLines) {
-            $Line = $Line -ireplace ('%SourceDir%', $SourceDir)
-            $Line = $Line -ireplace ('%LogPath%', $LogPath)
             $CommandLine = $null
-            If ($Line.InnerXML) {
-                $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line.InnerXML) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
+            If ($Line.InnerText) {
+                $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line.InnerText) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
+                $CommandLine = $CommandLine -ireplace ('%SourceDir%', $SourceDir)
+                $CommandLine = $CommandLine -ireplace ('%LogPath%', $LogPath)    
                 $WriteRC = Switch ($Line.RC) {
                     "true" { $true }
                     "false" { $false }
@@ -557,14 +557,16 @@ $Form.Add_ContentRendered( {
             }
             ElseIf($Line) {
                 $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
-                Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
+                $CommandLine = $CommandLine -ireplace ('%SourceDir%', $SourceDir)
+                $CommandLine = $CommandLine -ireplace ('%LogPath%', $LogPath)     
                 $WriteRC = $true
             }
+            Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
             If($CommandLine) {
                 #Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
                 $Progress.Value = ($x / $PackageCount) * 100
                 Update-GUI
-                $ExitCode = $null
+                $Return = $null
                 If ($CommandLine[1..9] -ne "") {
                     $error.clear()
                     $Return = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue)
@@ -574,8 +576,10 @@ $Form.Add_ContentRendered( {
                     $Return = (Start-Process $CommandLine[0] -PassThru -Wait -ErrorAction SilentlyContinue)
                 }
                 Write-Log "$LogPath$LogFileName" -LogContent "Application finished with exitcode:  $($Return.ExitCode)"
-                If ($WriteRC) { $ExitCodes = $ExitCodes + $Return.ExitCode + ";" }
-                If ($Return.ExitCode -gt $Finalresultcode) { $Finalresultcode = $Return.ExitCode }
+                If ($WriteRC) {
+                    $ExitCodes = $ExitCodes + $Return.ExitCode + ";" 
+                    If ($Return.ExitCode -gt $Finalresultcode) {$Finalresultcode = $Return.ExitCode}
+                    }
                 If($Return.ExitCode -notin (0,1707,3010,1641,1618)){
                     Write-Log "$LogPath$LogFileName" -LogContent "Error: Application could not be started! $($Return.StandardError)"
                 }
