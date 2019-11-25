@@ -1,4 +1,6 @@
 @ECHO OFF
+"%~dp0\Resources\CONSOLESTATE.exe" /Hide
+
 IF %Username% EQU %COMPUTERNAME%$ goto SYSTEM
 IF "%Username%" NEQ "%COMPUTERNAME$%" goto USER
 GOTO EXIT

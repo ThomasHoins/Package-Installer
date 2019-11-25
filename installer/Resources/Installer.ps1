@@ -32,7 +32,7 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        2.1.5
+    Version:        2.1.6
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
@@ -53,6 +53,7 @@ History:
     2.1.3     20.11.2019    Minor enhancements to the main installation routine (TH)
     2.1.4     21.11.2019    Changed installation routine (TH)
     2.1.5     25.11.2019    Removed a Bug with the MIF file name from Write-Mif (TH)
+    2.1.6     25.11.2019    Bug fix installer routine (TH)
 
 Known Bugs:
   
@@ -65,7 +66,7 @@ Known Bugs:
 #>
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
-$SCCMInstallerVersion = "2.1.5"
+
 
 Param(
     [ValidateSet("/i", "/u", "/r")]
@@ -77,6 +78,8 @@ Param(
         HelpMessage = "Enter the full path of the installer XML file")]
     [String]$XMLPath
 )
+
+$SCCMInstallerVersion = "2.1.6"
 $ExecutionString = Switch ($Option) {
     "/i" { "SETUP" }
     "/u" { "UNINSTALL" }
@@ -554,32 +557,34 @@ $Form.Add_ContentRendered( {
             }
             ElseIf($Line) {
                 $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
+                Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
                 $WriteRC = $true
             }
-            If($CommandLine) {Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"}
-            $Progress.Value = ($x / $PackageCount) * 100
-            Update-GUI
-            $ExitCode = 1
-            Try {
+            If($CommandLine) {
+                #Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
+                $Progress.Value = ($x / $PackageCount) * 100
+                Update-GUI
+                $ExitCode = $null
                 If ($CommandLine[1..9] -ne "") {
                     $error.clear()
-                    $ExitCode = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue).ExitCode
+                    $Return = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue)
                 }
                 ElseIf($CommandLine) {
                     $error.clear()
-                    $ExitCode = (Start-Process $CommandLine[0] -PassThru -Wait -ErrorAction SilentlyContinue).ExitCode
+                    $Return = (Start-Process $CommandLine[0] -PassThru -Wait -ErrorAction SilentlyContinue)
                 }
-                Write-Log "$LogPath$LogFileName" -LogContent "Application finished with exitcode:  $ExitCode"
-                If ($WriteRC) { $ExitCodes = $ExitCodes + $ExitCode + ";" }
-                If ($ExitCode -gt $Finalresultcode) { $Finalresultcode = $ExitCode }
-            }
-            Catch {
-                Write-Log "$LogPath$LogFileName" -LogContent "Error: Application could not be started! $error[0].Exception.Message"
+                Write-Log "$LogPath$LogFileName" -LogContent "Application finished with exitcode:  $($Return.ExitCode)"
+                If ($WriteRC) { $ExitCodes = $ExitCodes + $Return.ExitCode + ";" }
+                If ($Return.ExitCode -gt $Finalresultcode) { $Finalresultcode = $Return.ExitCode }
+                If($Return.ExitCode -notin (0,1707,3010,1641,1618)){
+                    Write-Log "$LogPath$LogFileName" -LogContent "Error: Application could not be started! $($Return.StandardError)"
+                }
             }
             $x++
         }
         Write-Log "$LogPath$LogFileName" -LogContent "Installer Result Codes: $ExitCodes"
-        If($Finalresultcode -in {0,1707,3010,1641,1618}){
+        Write-Log "$LogPath$LogFileName" -LogContent "Highest Result Code: $Finalresultcode"
+        If($Finalresultcode -in (0,1707,3010,1641,1618)){
             Write-Mif $ExitCodes
             Write-RegEntry $ExitCodes
             }

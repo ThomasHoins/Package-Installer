@@ -6,7 +6,7 @@
 		<REQUIREOS>Windows 7;Windows 8;Windows 10;Server 2012; Server 2016</REQUIREOS> <!-- Required OS matches the part in Windows Information / Edition  -->
 		<ONLYX64>false</ONLYX64>											<!-- true/false run only on X64 Systems-->
 		<REQUIREDRIVE>false</REQUIREDRIVE>									<!-- true/false is not implemented-->
-		<REQUIREADMINRIGHTS>true</REQUIREADMINRIGHTS>						<!-- true/false self explaining-->
+		<REQUIREADMINRIGHTS>false</REQUIREADMINRIGHTS>						<!-- true/false self explaining-->
 		<CHECKPENDINGFILES>false</CHECKPENDINGFILES>   						<!-- true/false is not implemented-->
 		<SOURCEDIR></SOURCEDIR>												<!-- true/false Differnt Source Dir, Default is the directory of Installer.XML. is not implemented-->
 
