@@ -54,6 +54,7 @@ History:
     2.1.4     21.11.2019    Changed installation routine (TH)
     2.1.5     25.11.2019    Removed a Bug with the MIF file name from Write-Mif (TH)
     2.1.6     25.11.2019    Bug fixes installer routine (TH)
+    2.1.7     27.11.2019    Changes to the Title Bar, disable close Button (TH)
 
 Known Bugs:
   
@@ -331,9 +332,9 @@ $PackageList.Add_MouseDoubleClick( {
         $global:Wait = $false
     }) 
 
-#Make sure to stop PS when closing
+#Disable closing the dialogue
 $Form.Add_Closing( {
-        #Exit
+    $PSItem.Cancel = $True
     })
     
     

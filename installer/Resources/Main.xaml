@@ -1,8 +1,11 @@
 ﻿<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:local="clr-namespace:Installer" Name="MainWindow"
-        Title="SCCM Installer" WindowStyle="SingleBorderWindow" Topmost="True" SizeToContent="WidthAndHeight" MinWidth="590" MinHeight="240">
+        Title="SCCM Installer" WindowStyle="SingleBorderWindow" Topmost="True" SizeToContent="WidthAndHeight" MinWidth="590" MinHeight="240" ResizeMode="NoResize" IsEnabled="True">
     <Grid>
-        <Grid Name="MainGrid" Visibility="Hidden">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid Name="MainGrid" Visibility="Hidden" Grid.ColumnSpan="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="25" />
