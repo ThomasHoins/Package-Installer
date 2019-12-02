@@ -2,7 +2,7 @@
 "%~dp0Resources\CONSOLESTATE.exe" /Hide
 Set logpath=C:\program files\Support\Logs
 Set logfile="%logpath%\installer.log"
-Set OSDSETUPHOOK=tasklist /FI "IMAGENAME eq OSDSETUPHOOK.exe"
+For /F "Tokens=*" %%I in ('tasklist /FI "IMAGENAME eq OSDSETUPHOOK.exe" ^| find /I "OSDSETUPHOOK.exe"') Do Set OSDSETUPHOOK=%%I
 
 ECHO -------------------------------------------------- >> %logfile%
 ECHO Starting Installation %date% %time% >> %logfile%
