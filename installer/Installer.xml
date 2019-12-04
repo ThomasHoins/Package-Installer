@@ -20,9 +20,10 @@
 		<REGISTRY>true</REGISTRY>											<!-- true/false Log installation to Registry -->
 		<REGISTRYPATH>Software\Support\Installed Packages\</REGISTRYPATH>   <!-- only local Machine Path, Path to log to -->
 		
+		<APPICONPATH></APPICONPATH>											<!-- Alternative path for AppIcon.png .\Path | .\Path\Filename.ext Default .\Info\AppIcon.png also changes Description path-->
 		<USEAPPICON>true</USEAPPICON>										<!-- use the App Icon, if \Resourced\AppIcon.png exists  -->
 		
-        <NOGUI>false</NOGUI>												<!-- true/false Show Installation Window.  Not good implemented, will blink for 0,1s -->
+        <NOGUI>false</NOGUI>												<!-- true/false Show Installation Window.  Not good implemented, will blink at start -->
 		<INTERACTIVE>false</INTERACTIVE>									<!-- true/false run the Installation in foreground so the user can interact. Not implemented -->
 		<INVENTORY>%programfiles%\support\scripts\inventory.cmd</INVENTORY> <!-- Path to inventory executable (%programfiles%\support\scripts\inventory.cmd), Will run the executable, to create a new inventory entry.-->
 		<UNINSTALLENABLED>true</UNINSTALLENABLED>							<!-- true/false/empty  Allow uninstallation, default is true.-->

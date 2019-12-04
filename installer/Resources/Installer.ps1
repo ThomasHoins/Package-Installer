@@ -32,7 +32,7 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        2.1.6
+    Version:        2.1.8
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
@@ -55,7 +55,7 @@ History:
     2.1.5     25.11.2019    Removed a Bug with the MIF file name from Write-Mif (TH)
     2.1.6     25.11.2019    Bug fixes installer routine (TH)
     2.1.7     27.11.2019    Changes to the Title Bar, disable close Button (TH)
-
+    2.1.8     04.12.2019    Changed the AppIcon Path and added a entry in the Installer.xml, changed the structure (TH)
 Known Bugs:
   
 
@@ -80,7 +80,7 @@ Param(
     [String]$XMLPath
 )
 
-$SCCMInstallerVersion = "2.1.6"
+$SCCMInstallerVersion = "2.1.8"
 $ExecutionString = Switch ($Option) {
     "/i" { "SETUP" }
     "/u" { "UNINSTALL" }
@@ -116,7 +116,7 @@ $xaml.SelectNodes("//*[@*[contains(translate(name(.),'n','N'),'Name')]]") | ForE
     }
 }
 
-
+#-------------- Load the installer.xml----------------------------------
 #Check for multiple installer XML files
 If ($XMLPath -eq "") {
     $installerFiles = Get-ChildItem "$PSScriptRoot\..\*Installer*.xml"
@@ -124,7 +124,116 @@ If ($XMLPath -eq "") {
 Else {
     $installerFiles = $XMLPath
 }  
-# End of XAML import
+
+#Check for multiple installer XML files
+If ($installerFiles.Count -gt 1) {
+    $global:Wait = $true
+    ForEach ($InstallerFile in $installerFiles) {
+        [xml]$installertemp = Get-Content $InstallerFile
+        $PackageList.AddChild("$($InstallerFile.Name) - $($installertemp.'PKG-INSTALLER'.PRODUCT.MANUFACTURER) $($installertemp.'PKG-INSTALLER'.PRODUCT.DESCRIPTION) $($installertemp.'PKG-INSTALLER'.PRODUCT.VERSION)")
+    }
+    Show-Grid "ListGrid"
+
+    #wait for installer.xml selection
+    While ($global:Wait) {
+        Update-GUI
+    }
+    $SelInstallerfile = $installerFiles[$PackageList.SelectedIndex].FullName
+    [xml]$installer = Get-Content $SelInstallerfile
+    $PackageList.Items.Clear()
+}
+ElseIf ($installerFiles.Count -eq 1) {
+    [xml]$installer = Get-Content $installerFiles
+}
+Else {
+    [xml]$installer = Get-Content "$PSScriptRoot\..\Installer.xml"
+    Write-Host
+}
+
+#load Logo
+If ($installer.'PKG-INSTALLER'.STARTUP.USEAPPICON -eq "true") {
+    $AppIconStub = [System.Environment]::ExpandEnvironmentVariables($installer.'PKG-INSTALLER'.STARTUP.APPICONPATH)
+    $AppIconStub = $AppIconStub.Replace("%sourcedir%",$SourceDir)
+    If ($AppIconStub){
+        If (Split-Path $AppIconStub -IsAbsolute) {
+            If ((Split-Path $AppIconStub -Leaf) -like "*.*" ) {
+                $AppIconFullPath = $AppIconStub
+                }
+            Else {
+                $AppIconFullPath = "$AppIconStub\AppIcon.png"
+                }
+            }
+        Else {
+            $AppIconPath = (Resolve-Path "$SourceDir\$AppIconStub").Path
+            If ((Split-Path $AppIconPath -Leaf) -like "*.*" ) {
+                $AppIconFullPath = $AppIconPath
+                }
+            Else {
+                $AppIconFullPath = "$AppIconPath\AppIcon.png"
+                }
+            }
+        }
+    Else {
+        $AppIconFullPath = "$SourceDir\Info\AppIcon.png"
+        }
+    If ([System.IO.File]::Exists($AppIconFullPath)){
+        $Logo.Source = $AppIconFullPath
+        }
+    Else {
+        $Logo.Source = "$PSScriptRoot\Logo.png"
+        }
+    }
+Else {
+    $Logo.Source = "$PSScriptRoot\Logo.png"          
+    }
+
+$MainWindow.Title = $installer.'PKG-INSTALLER'.STARTUP.TITLE
+$Description.Content = $installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION
+$Manufacterer.Content = $installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER
+$Version.Content = $installer.'PKG-INSTALLER'.PRODUCT.VERSION
+$Language.Content = $installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE
+$Assetnumber.Content = $installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER
+$global:LoggingEnabled = Switch ($installer.'PKG-INSTALLER'.STARTUP.LOGFILE) {
+    "true" { $true }
+    "false" { $false }
+    default { $true }
+    }
+$global:MifEnabled = Switch ($installer.'PKG-INSTALLER'.STARTUP.MIFFILE) {
+    "true" { $true }
+    "false" { $false }
+    default { $false }
+    }
+$RequireAdmin = Switch ($installer.'PKG-INSTALLER'.STARTUP.REQUIREADMINRIGHTS) {
+    "true" { $true }
+    "false" { $false }
+    default { $false }
+    }
+$LogPath = $installer.'PKG-INSTALLER'.STARTUP.LOGPATH
+$LogFileName = $installer.'PKG-INSTALLER'.STARTUP.LOGFILENAME
+$XMLVersion = $installer.'PKG-INSTALLER'.STARTUP.XMLVERSION
+$LoggedOnUserName = (Get-WmiObject -Class win32_computersystem -ComputerName $env:COMPUTERNAME).UserName
+$OSArchitecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
+$OSVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ProductName
+$RequiredOS = $installer.'PKG-INSTALLER'.STARTUP.REQUIREOS.Split(";")
+$CommandlinesX64 = $installer.'PKG-INSTALLER'.SETUP_X64.EXE 
+If ($CommandlinesX64 -ne "") { $X64SetupExists = $true }
+$Onlyx64 = Switch ($installer.'PKG-INSTALLER'.STARTUP.ONLYX64) {
+    "true" { $true }
+    "false" { $false }
+    default { $false }
+    }
+$UninstallEnabled = Switch ($installer.'PKG-INSTALLER'.STARTUP.UNINSTALLENABLED) {
+    "true" { $true }
+    "false" { $false }
+    default { $true }
+    }
+# check if OS matches
+$OSMatch = $false
+ForEach ($OS in $RequiredOS) {
+    If ($OSVersion -like "$OS*") {
+        $OSMatch = $true
+        }
+    }
 
 #----------------------------------------------------------[Declarations]----------------------------------------------------------
 
@@ -340,317 +449,230 @@ $Form.Add_Closing( {
     
 #When the Form is loaded, this will be executed
 $Form.Add_ContentRendered( {
-        #Check for multiple installer XML files
-        If ($installerFiles.Count -gt 1) {
-            $global:Wait = $true
-            ForEach ($InstallerFile in $installerFiles) {
-                [xml]$installertemp = Get-Content $InstallerFile
-                $PackageList.AddChild("$($InstallerFile.Name) - $($installertemp.'PKG-INSTALLER'.PRODUCT.MANUFACTURER) $($installertemp.'PKG-INSTALLER'.PRODUCT.DESCRIPTION) $($installertemp.'PKG-INSTALLER'.PRODUCT.VERSION)")
-            }
-            Show-Grid "ListGrid"
-    
-            #wait for installer.xml selection
-            While ($global:Wait) {
-                Update-GUI
-            }
-            $SelInstallerfile = $installerFiles[$PackageList.SelectedIndex].FullName
-            #load installer.xml
-            [xml]$installer = Get-Content $SelInstallerfile
-            $PackageList.Items.Clear()
+    #Hide Main Window if configured in XML
+    If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true") {
+        $MainWindow.Visibility = "Hidden"
+        $MainWindow.ShowInTaskbar = $false
         }
-        ElseIf ($installerFiles.Count -eq 1) {
-            #load installer.xml
-            [xml]$installer = Get-Content $installerFiles
-        }
-        Else {
-            #load installer.xml
-            [xml]$installer = Get-Content "$PSScriptRoot\..\Installer.xml"
-            Write-Host
-        }
-        #load Logo
-        If ($installer.'PKG-INSTALLER'.STARTUP.USEAPPICON -eq "true") {
-            If (Test-Path "$PSScriptRoot\AppIcon.png") {
-                $Logo.Source = "$PSScriptRoot\AppIcon.png"
-            }
-            Else {
-                $Logo.Source = "$PSScriptRoot\Logo.png"
-            }
-        }
-        Else {
-            $Logo.Source = "$PSScriptRoot\Logo.png"          
-        }
+#----------------------------------------------[Installation Processes starts here]----------------------------------
 
-        If ($installer.'PKG-INSTALLER'.STARTUP.NOGUI -eq "true") {
-            $MainWindow.Visibility = "Hidden"
+    # create empty log file
+    If ($global:LoggingEnabled -and ($ExecutionString -like "SETUP*")) {
+        $NewLogFile = New-Item "$LogPath$LogFileName" -Force -ItemType File 
+    }
+
+    #Start Logging
+    Switch ($ExecutionString) {
+        "SETUP" {
+            Write-Log "$LogPath$LogFileName" -LogContent "Installer started (ScriptVersion: $SCCMInstallerVersion - XML File Version $XMLVersion)" 
+        }
+        "UNINSTALL" {
+            Write-Log "$LogPath$LogFileName" -LogContent "--------------------------------------------------------------------------" 
+            Write-Log "$LogPath$LogFileName" -LogContent "Uninstall started (ScriptVersion: $SCCMInstallerVersion - XML File Version $XMLVersion)" 
+        }
+        "REPAIR" {
+            Write-Log "$LogPath$LogFileName" -LogContent "--------------------------------------------------------------------------"
+            Write-Log "$LogPath$LogFileName" -LogContent "Repair started (ScriptVersion: $SCCMInstallerVersion - XML File Version $XMLVersion)" 
+        }
+    }
+    Write-Log "$LogPath$LogFileName" -LogContent "Logged On UserName: $LoggedOnUserName"
+    Write-Log "$LogPath$LogFileName" -LogContent "Executing UserName: $($myWindowsPrincipal.Identity.Name)"
+    Write-Log "$LogPath$LogFileName" -LogContent "Executing User Is Admin: $($myWindowsPrincipal.IsInRole($adminRole))"
+    Write-Log "$LogPath$LogFileName" -LogContent "Admin Permission required: $RequireAdmin"
+    Write-Log "$LogPath$LogFileName" -LogContent "OS Version: $OSVersion"
+    Write-Log "$LogPath$LogFileName" -LogContent "OS Architecture: $OSArchitecture"
+    Write-Log "$LogPath$LogFileName" -LogContent "OS Architecture matches Required OS: $OSMatch"
+    Write-Log "$LogPath$LogFileName" -LogContent "x64 Setup block found: $X64SetupExists"
+    Write-Log "$LogPath$LogFileName" -LogContent "Calling command line: $PSCommandPath $Option $XMLPath"
+    If ($RequireAdmin -and ($RequireAdmin -ne $myWindowsPrincipal.IsInRole($adminRole))) {
+        Write-Log "$LogPath$LogFileName" -LogContent "Required Admin rigths not available, stopping!"
+        $Form.Close()
+        Exit 1
+    }
+    If ($Onlyx64 -eq $true -and !($X64SetupExists)) {
+        Write-Log "$LogPath$LogFileName" -LogContent "Error: Required X64 setup entries are missing, stopping!"
+        $Form.Close()
+        Exit 1
+    }
+    If ($Onlyx64 -eq $true -and !($OSArchitecture = "64-Bit") ) {
+        Write-Log "$LogPath$LogFileName" -LogContent "Error: Required X64 does not match OS, stopping!"
+        $Form.Close()
+        Exit 1
+    }
+    If ($ExecutionString -like "UNINSTALL*" -and ($UninstallEnabled -eq $false) ) {
+        Write-Log "$LogPath$LogFileName" -LogContent "Error: Uninstallation was selected, but is disabled in XML, stopping!"
+        $Form.Close()
+        Exit 1
+    }
+
+    #Reset variables
+    $x = 0
+    $ExitCodes = ""
+
+    #Close running Tasks Message Handling
+    $ProcessToCheck = $installer.'PKG-INSTALLER'.CHECK.EXE
+
+    $MessageBoxText = Out-String -InputObject $installer.'PKG-INSTALLER'.CHECK.MESSAGEBOXTEXT 
+    $Autokill = Switch ($installer.'PKG-INSTALLER'.CHECK.AUTOKILL) {
+        "true" { $true }
+        "false" { $false }
+        default { $false }
+    }
+
+    If ($Autokill) {
+        $CountdownText.Visibility = "Visible"
+        $Timer = 60
+        $CountText = $installer.'PKG-INSTALLER'.CHECK.COUNTDOWNTEXT
+        $CountUnit = $installer.'PKG-INSTALLER'.CHECK.COUNTDOWNUNIT
+        If ($CountText -eq "") { $CountText = "Waiting for" }
+        If ($CountUnit -eq "") { $CountUnit = "sec." }
+    }
+    Else {
+        $CountdownText.Visibility = "Hidden"
+        $Timer = -1
+    }
+    ForEach ($Process in $ProcessToCheck) {
+        #show the message 5x if the user just presses OK kill the process
+        If ($Process -ne "") {
+            For ($t = 1; $t -le 4; $t ++) {
+                try {
+                    $RunningProcess = Get-Process -Name $Process -ErrorAction SilentlyContinue      
+                }
+                catch {
+                    Write-Log "$LogPath$LogFileName" -LogContent "Process $Process is not running"
+                }
+                If ($RunningProcess -ne $null) {
+                    Show-Message $MessageBoxText -TimeoutTime $Timer -Countdown $CountText -Unit $CountUnit
+                    Show-Grid "MainGrid"
+                    If ($Autokill) {
+                        $StopResult = Stop-Process $RunningProcess -Force
+                        Write-Log "$LogPath$LogFileName" -LogContent "Process $($RunningProcess.Name) has been closed with by Autokill with Exit Code: $($StopResult.ExitCode)"
+                        Break   
+                    }
+                }
+            }
+            If ($RunningProcess -ne $null) {
+                $StopResult = Stop-Process $RunningProcess -Force
+                Write-Log "$LogPath$LogFileName" -LogContent "Process $($RunningProcess.Name) has been closed with Exit Code: $($StopResult.ExitCode)"
+            }
+        }
+    }
+
+    #Start Installation
+    Show-Grid "MainGrid"
+    $Finalresultcode = 0
+    If ($OSArchitecture = "64-Bit" -and $X64SetupExists) {
+        $ExecutionString = "$($ExecutionString)_X64"
+    }
+    $CommandLines = $($installer.'PKG-INSTALLER'.$ExecutionString.EXE)
+    $PackageCount = $CommandLines.Count
+    ForEach ($Line In $CommandLines) {
+        $CommandLine = $null
+        If ($Line.InnerText) {
+            $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line.InnerText) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
+            $CommandLine = $CommandLine -ireplace ('%SourceDir%', $SourceDir)
+            $CommandLine = $CommandLine -ireplace ('%LogPath%', $LogPath)    
+            $WriteRC = Switch ($Line.RC) {
+                "true" { $true }
+                "false" { $false }
+                default { $true }
+            }
+        }
+        ElseIf($Line) {
+            $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
+            $CommandLine = $CommandLine -ireplace ('%SourceDir%', $SourceDir)
+            $CommandLine = $CommandLine -ireplace ('%LogPath%', $LogPath)     
+            $WriteRC = $true
+        }
+        If($CommandLine) {
+            Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
+            $Progress.Value = ($x / $PackageCount) * 100
             Update-GUI
-        }
-        $MainWindow.Title = $installer.'PKG-INSTALLER'.STARTUP.TITLE
-        $Description.Content = $installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION
-        $Manufacterer.Content = $installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER
-        $Version.Content = $installer.'PKG-INSTALLER'.PRODUCT.VERSION
-        $Language.Content = $installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE
-        $Assetnumber.Content = $installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER
-        $global:LoggingEnabled = Switch ($installer.'PKG-INSTALLER'.STARTUP.LOGFILE) {
-            "true" { $true }
-            "false" { $false }
-            default { $true }
-        }
-        $global:MifEnabled = Switch ($installer.'PKG-INSTALLER'.STARTUP.MIFFILE) {
-            "true" { $true }
-            "false" { $false }
-            default { $false }
-        }
-        $RequireAdmin = Switch ($installer.'PKG-INSTALLER'.STARTUP.REQUIREADMINRIGHTS) {
-            "true" { $true }
-            "false" { $false }
-            default { $false }
-        }
-        $LogPath = $installer.'PKG-INSTALLER'.STARTUP.LOGPATH
-        $LogFileName = $installer.'PKG-INSTALLER'.STARTUP.LOGFILENAME
-        $XMLVersion = $installer.'PKG-INSTALLER'.STARTUP.XMLVERSION
-        $LoggedOnUserName = (Get-WmiObject -Class win32_computersystem -ComputerName $env:COMPUTERNAME).UserName
-        $OSArchitecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
-        $OSVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ProductName
-        $RequiredOS = $installer.'PKG-INSTALLER'.STARTUP.REQUIREOS.Split(";")
-        $CommandlinesX64 = $installer.'PKG-INSTALLER'.SETUP_X64.EXE 
-        If ($CommandlinesX64 -ne "") { $X64SetupExists = $true }
-        $Onlyx64 = Switch ($installer.'PKG-INSTALLER'.STARTUP.ONLYX64) {
-            "true" { $true }
-            "false" { $false }
-            default { $false }
-        }
-        $UninstallEnabled = Switch ($installer.'PKG-INSTALLER'.STARTUP.UNINSTALLENABLED) {
-            "true" { $true }
-            "false" { $false }
-            default { $true }
-        }
-        # check if OS matches
-        $OSMatch = $false
-        ForEach ($OS in $RequiredOS) {
-            If ($OSVersion -like "$OS*") {
-                $OSMatch = $true
+            $Return = $null
+            If ($CommandLine[1..9] -ne "") {
+                $error.clear()
+                $Return = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue)
+            }
+            ElseIf($CommandLine) {
+                $error.clear()
+                $Return = (Start-Process $CommandLine[0] -PassThru -Wait -ErrorAction SilentlyContinue)
+            }
+            Write-Log "$LogPath$LogFileName" -LogContent "Application finished with exitcode:  $($Return.ExitCode)"
+            If ($WriteRC) {
+                $ExitCodes = $ExitCodes + $Return.ExitCode + ";" 
+                If ($Return.ExitCode -gt $Finalresultcode) {$Finalresultcode = $Return.ExitCode}
+                }
+            If($Return.ExitCode -notin (0,1707,3010,1641,1618)){
+                Write-Log "$LogPath$LogFileName" -LogContent "Error: Application could not be started! $($Return.StandardError)"
             }
         }
-
-        #----------------------------------------------[Installation Processes starts here]----------------------------------
-
-        # create empty log file
-        If ($global:LoggingEnabled -and ($ExecutionString -like "SETUP*")) {
-            $NewLogFile = New-Item "$LogPath$LogFileName" -Force -ItemType File 
+        $x++
+    }
+    Write-Log "$LogPath$LogFileName" -LogContent "Installer Result Codes: $ExitCodes"
+    Write-Log "$LogPath$LogFileName" -LogContent "Highest Result Code: $Finalresultcode"
+    If($Finalresultcode -in (0,1707,3010,1641,1618)){
+        Write-Mif $ExitCodes
+        Write-RegEntry $ExitCodes
         }
+    Invoke-Inventory
 
-        #Start Logging
-        Switch ($ExecutionString) {
-            "SETUP" {
-                Write-Log "$LogPath$LogFileName" -LogContent "Installer started (ScriptVersion: $SCCMInstallerVersion - XML File Version $XMLVersion)" 
-            }
-            "UNINSTALL" {
-                Write-Log "$LogPath$LogFileName" -LogContent "--------------------------------------------------------------------------" 
-                Write-Log "$LogPath$LogFileName" -LogContent "Uninstall started (ScriptVersion: $SCCMInstallerVersion - XML File Version $XMLVersion)" 
-            }
-            "REPAIR" {
-                Write-Log "$LogPath$LogFileName" -LogContent "--------------------------------------------------------------------------"
-                Write-Log "$LogPath$LogFileName" -LogContent "Repair started (ScriptVersion: $SCCMInstallerVersion - XML File Version $XMLVersion)" 
-            }
-        }
-        Write-Log "$LogPath$LogFileName" -LogContent "Logged On UserName: $LoggedOnUserName"
-        Write-Log "$LogPath$LogFileName" -LogContent "Executing UserName: $($myWindowsPrincipal.Identity.Name)"
-        Write-Log "$LogPath$LogFileName" -LogContent "Executing User Is Admin: $($myWindowsPrincipal.IsInRole($adminRole))"
-        Write-Log "$LogPath$LogFileName" -LogContent "Admin Permission required: $RequireAdmin"
-        Write-Log "$LogPath$LogFileName" -LogContent "OS Version: $OSVersion"
-        Write-Log "$LogPath$LogFileName" -LogContent "OS Architecture: $OSArchitecture"
-        Write-Log "$LogPath$LogFileName" -LogContent "OS Architecture matches Required OS: $OSMatch"
-        Write-Log "$LogPath$LogFileName" -LogContent "x64 Setup block found: $X64SetupExists"
-        Write-Log "$LogPath$LogFileName" -LogContent "Calling command line: $PSCommandPath $Option $XMLPath"
-        If ($RequireAdmin -and ($RequireAdmin -ne $myWindowsPrincipal.IsInRole($adminRole))) {
-            Write-Log "$LogPath$LogFileName" -LogContent "Required Admin rigths not available, stopping!"
-            $Form.Close()
-            Exit
-        }
-        If ($Onlyx64 -eq $true -and !($X64SetupExists)) {
-            Write-Log "$LogPath$LogFileName" -LogContent "Error: Required X64 setup entries are missing, stopping!"
-            $Form.Close()
-            Exit
-        }
-        If ($Onlyx64 -eq $true -and !($OSArchitecture = "64-Bit") ) {
-            Write-Log "$LogPath$LogFileName" -LogContent "Error: Required X64 does not match OS, stopping!"
-            $Form.Close()
-            Exit
-        }
-        If ($ExecutionString -like "UNINSTALL*" -and ($UninstallEnabled -eq $false) ) {
-            Write-Log "$LogPath$LogFileName" -LogContent "Error: Uninstallation was selected, but is disabled in XML, stopping!"
-            $Form.Close()
-            Exit
-        }
 
-        #Reset variables
-        $x = 0
-        $ExitCodes = ""
-
-        #Close running Tasks Message Handling
-        $ProcessToCheck = $installer.'PKG-INSTALLER'.CHECK.EXE
-
-        $MessageBoxText = Out-String -InputObject $installer.'PKG-INSTALLER'.CHECK.MESSAGEBOXTEXT 
-        $Autokill = Switch ($installer.'PKG-INSTALLER'.CHECK.AUTOKILL) {
-            "true" { $true }
-            "false" { $false }
-            default { $false }
-        }
-
-        If ($Autokill) {
+    #Exit Message Handling
+    $ExitMessageActive = Switch ($installer.'PKG-INSTALLER'.EXIT.MESSAGEBOX_ACTIVE) {
+        "true" { $true }
+        "false" { $false }
+        default { $false } 
+    }
+    $AutoRebootActive = Switch ($installer.'PKG-INSTALLER'.EXIT.AUTOREBOOT) {
+        "true" { $true }
+        "false" { $false }
+        default { $false } 
+    }
+    If ($ExitMessageActive) {
+        $ExitMessageTimeout = $installer.'PKG-INSTALLER'.EXIT.TIMEOUT
+        If ($ExitMessageTimeout -ne "") {
+            $RestartTimerMsg = $installer.'PKG-INSTALLER'.EXIT.COUNTDOWNTEXT
+            $RestartTimerUnit = $installer.'PKG-INSTALLER'.EXIT.COUNTDOWNUNIT
+            If ($RestartTimerMsg -eq "") { $RestartTimerMsg = "Restarting in" }
+            If ($RestartTimerUnit -eq "") { $RestartTimerUnit = "sec." }
             $CountdownText.Visibility = "Visible"
-            $Timer = 60
-            $CountText = $installer.'PKG-INSTALLER'.CHECK.COUNTDOWNTEXT
-            $CountUnit = $installer.'PKG-INSTALLER'.CHECK.COUNTDOWNUNIT
-            If ($CountText -eq "") { $CountText = "Waiting for" }
-            If ($CountUnit -eq "") { $CountUnit = "sec." }
         }
         Else {
             $CountdownText.Visibility = "Hidden"
-            $Timer = -1
+            $ExitMessageTimeout = -1
         }
-        ForEach ($Process in $ProcessToCheck) {
-            #show the message 5x if the user just presses OK kill the process
-            If ($Process -ne "") {
-                For ($t = 1; $t -le 4; $t ++) {
-                    try {
-                        $RunningProcess = Get-Process -Name $Process -ErrorAction SilentlyContinue      
-                    }
-                    catch {
-                        Write-Log "$LogPath$LogFileName" -LogContent "Process $Process is not running"
-                    }
-                    If ($RunningProcess -ne $null) {
-                        Show-Message $MessageBoxText -TimeoutTime $Timer -Countdown $CountText -Unit $CountUnit
-                        Show-Grid "MainGrid"
-                        If ($Autokill) {
-                            $StopResult = Stop-Process $RunningProcess -Force
-                            Write-Log "$LogPath$LogFileName" -LogContent "Process $($RunningProcess.Name) has been closed with by Autokill with Exit Code: $($StopResult.ExitCode)"
-                            Break   
-                        }
-                    }
-                }
-                If ($RunningProcess -ne $null) {
-                    $StopResult = Stop-Process $RunningProcess -Force
-                    Write-Log "$LogPath$LogFileName" -LogContent "Process $($RunningProcess.Name) has been closed with Exit Code: $($StopResult.ExitCode)"
-                }
+        $ExitMessageText = Out-String -InputObject $installer.'PKG-INSTALLER'.EXIT.MESSAGEBOXTEXT
+        $OSD = $false
+        $ExitMessageOSDFlag = $installer.'PKG-INSTALLER'.EXIT.OSDFLAG
+        Switch ($installer.'PKG-INSTALLER'.EXIT.OSDFLAG_MODE) {
+            "registry" {
+                $RegValues = $ExitMessageOSDFlag.Split(";")
+                $Value = (Get-ItemProperty "HKLM:\$($RegValues[0])").$($RegValues[1])
+                If ($Value -eq $RegValues[2]) { $OSD = $true }
+            }
+            "file" {
+                $OSD = Test-Path ($ExitMessageOSDFlag).Replace("""", "")
+            }
+            "process" {
+                $ExitProcess = (Get-Process $ExitMessageOSDFlag).Id
+                If ($ExitProcess -is [int]) { $OSD = $true }
             }
         }
+        Write-Log "$LogPath$LogFileName" -LogContent "Showing Exit Message. AutoReboot: $AutoRebootActive Timeout: $ExitMessageTimeout"
+        If (!$OSD) {
+            Show-Message $ExitMessageText -TimeoutTime $ExitMessageTimeout -Countdown $RestartTimerMsg -Unit $RestartTimerUnit
+            Show-Grid "MainGrid"
+        }
+        If ($AutoRebootActive) {
+            Write-Log "$LogPath$LogFileName" -LogContent "Auto Reboot will restart the computer now!"
+            Restart-Computer -Force
+        }
+    }  
 
-        #Start Installation
-        Show-Grid "MainGrid"
-        $Finalresultcode = 0
-        If ($OSArchitecture = "64-Bit" -and $X64SetupExists) {
-            $ExecutionString = "$($ExecutionString)_X64"
-        }
-        $CommandLines = $($installer.'PKG-INSTALLER'.$ExecutionString.EXE)
-        $PackageCount = $CommandLines.Count
-        ForEach ($Line In $CommandLines) {
-            $CommandLine = $null
-            If ($Line.InnerText) {
-                $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line.InnerText) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
-                $CommandLine = $CommandLine -ireplace ('%SourceDir%', $SourceDir)
-                $CommandLine = $CommandLine -ireplace ('%LogPath%', $LogPath)    
-                $WriteRC = Switch ($Line.RC) {
-                    "true" { $true }
-                    "false" { $false }
-                    default { $true }
-                }
-            }
-            ElseIf($Line) {
-                $CommandLine = [System.Environment]::ExpandEnvironmentVariables($Line) -Split ' +(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)'
-                $CommandLine = $CommandLine -ireplace ('%SourceDir%', $SourceDir)
-                $CommandLine = $CommandLine -ireplace ('%LogPath%', $LogPath)     
-                $WriteRC = $true
-            }
-            If($CommandLine) {
-                Write-Log "$LogPath$LogFileName" -LogContent "Executable to run: $CommandLine"
-                $Progress.Value = ($x / $PackageCount) * 100
-                Update-GUI
-                $Return = $null
-                If ($CommandLine[1..9] -ne "") {
-                    $error.clear()
-                    $Return = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue)
-                }
-                ElseIf($CommandLine) {
-                    $error.clear()
-                    $Return = (Start-Process $CommandLine[0] -PassThru -Wait -ErrorAction SilentlyContinue)
-                }
-                Write-Log "$LogPath$LogFileName" -LogContent "Application finished with exitcode:  $($Return.ExitCode)"
-                If ($WriteRC) {
-                    $ExitCodes = $ExitCodes + $Return.ExitCode + ";" 
-                    If ($Return.ExitCode -gt $Finalresultcode) {$Finalresultcode = $Return.ExitCode}
-                    }
-                If($Return.ExitCode -notin (0,1707,3010,1641,1618)){
-                    Write-Log "$LogPath$LogFileName" -LogContent "Error: Application could not be started! $($Return.StandardError)"
-                }
-            }
-            $x++
-        }
-        Write-Log "$LogPath$LogFileName" -LogContent "Installer Result Codes: $ExitCodes"
-        Write-Log "$LogPath$LogFileName" -LogContent "Highest Result Code: $Finalresultcode"
-        If($Finalresultcode -in (0,1707,3010,1641,1618)){
-            Write-Mif $ExitCodes
-            Write-RegEntry $ExitCodes
-            }
-        Invoke-Inventory
-
-
-        #Exit Message Handling
-        $ExitMessageActive = Switch ($installer.'PKG-INSTALLER'.EXIT.MESSAGEBOX_ACTIVE) {
-            "true" { $true }
-            "false" { $false }
-            default { $false } 
-        }
-        $AutoRebootActive = Switch ($installer.'PKG-INSTALLER'.EXIT.AUTOREBOOT) {
-            "true" { $true }
-            "false" { $false }
-            default { $false } 
-        }
-        If ($ExitMessageActive) {
-            $ExitMessageTimeout = $installer.'PKG-INSTALLER'.EXIT.TIMEOUT
-            If ($ExitMessageTimeout -ne "") {
-                $RestartTimerMsg = $installer.'PKG-INSTALLER'.EXIT.COUNTDOWNTEXT
-                $RestartTimerUnit = $installer.'PKG-INSTALLER'.EXIT.COUNTDOWNUNIT
-                If ($RestartTimerMsg -eq "") { $RestartTimerMsg = "Restarting in" }
-                If ($RestartTimerUnit -eq "") { $RestartTimerUnit = "sec." }
-                $CountdownText.Visibility = "Visible"
-            }
-            Else {
-                $CountdownText.Visibility = "Hidden"
-                $ExitMessageTimeout = -1
-            }
-            $ExitMessageText = Out-String -InputObject $installer.'PKG-INSTALLER'.EXIT.MESSAGEBOXTEXT
-            $OSD = $false
-            $ExitMessageOSDFlag = $installer.'PKG-INSTALLER'.EXIT.OSDFLAG
-            Switch ($installer.'PKG-INSTALLER'.EXIT.OSDFLAG_MODE) {
-                "registry" {
-                    $RegValues = $ExitMessageOSDFlag.Split(";")
-                    $Value = (Get-ItemProperty "HKLM:\$($RegValues[0])").$($RegValues[1])
-                    If ($Value -eq $RegValues[2]) { $OSD = $true }
-                }
-                "file" {
-                    $OSD = Test-Path ($ExitMessageOSDFlag).Replace("""", "")
-                }
-                "process" {
-                    $ExitProcess = (Get-Process $ExitMessageOSDFlag).Id
-                    If ($ExitProcess -is [int]) { $OSD = $true }
-                }
-            }
-            Write-Log "$LogPath$LogFileName" -LogContent "Showing Exit Message. AutoReboot: $AutoRebootActive Timeout: $ExitMessageTimeout"
-            If (!$OSD) {
-                Show-Message $ExitMessageText -TimeoutTime $ExitMessageTimeout -Countdown $RestartTimerMsg -Unit $RestartTimerUnit
-                Show-Grid "MainGrid"
-            }
-            If ($AutoRebootActive) {
-                Write-Log "$LogPath$LogFileName" -LogContent "Auto Reboot will restart the computer now!"
-                Restart-Computer -Force
-            }
-        }  
-
-        # End of the Main Program  
-        $Form.Close()
-        Exit $Finalresultcode
-    })
+    # End of the Main Program  
+    $Form.Close()
+    Exit $Finalresultcode
+})
 
 
 #Show the Main Window
