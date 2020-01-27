@@ -11,7 +11,7 @@
 		<SOURCEDIR></SOURCEDIR>												<!-- true/false Differnt Source Dir, Default is the directory of Installer.XML. is not implemented-->
 
 		<MIFFILE>true</MIFFILE>												<!-- true/false Create a MIF file-->
-		<MIFPATH></MIFPATH>													<!-- Path/Empty Path for the MIF file. No Environment Substitution here!. If empty or missing, we will use the defaultfor SCCM MIF-->
+		<MIFPATH>C:\Windows\CCM\Inventory\noidmifs</MIFPATH>				<!-- Path/Empty Path for the MIF file. No Environment Substitution here!. If empty or missing, we will use the defaultfor SCCM MIF. Should always be set for TS Packages-->
 
 		<LOGFILE>true</LOGFILE>												<!-- true/false Create a LOG file-->
 		<LOGPATH>C:\Temp\support\logs\</LOGPATH>							<!-- Path for the LOG file. No Environment Substitution here!. Mandatory if you set LOGFILE to true, otherwise it would try to write, where it is running-->

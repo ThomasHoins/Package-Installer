@@ -32,7 +32,7 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        2.1.8
+    Version:        2.1.9
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
@@ -56,6 +56,7 @@ History:
     2.1.6     25.11.2019    Bug fixes installer routine (TH)
     2.1.7     27.11.2019    Changes to the Title Bar, disable close Button (TH)
     2.1.8     04.12.2019    Changed the AppIcon Path and added a entry in the Installer.xml, changed the structure (TH)
+    2.1.9     27.01.2020    Fixed some issues with the Write-Mif function
 Known Bugs:
   
 
@@ -80,7 +81,7 @@ Param(
     [String]$XMLPath
 )
 
-$SCCMInstallerVersion = "2.1.8"
+$SCCMInstallerVersion = "2.1.9"
 $ExecutionString = Switch ($Option) {
     "/i" { "SETUP" }
     "/u" { "UNINSTALL" }
@@ -267,40 +268,42 @@ Function Write-Mif {
     param (
         [string]$MifResultcodes
     )
+    If ($MifResultcodes.Length>25){$MifResultcodes = $MifResultcodes.Substring(0,25)}
     If ($globaL:MifEnabled) {
         $MifFilePath = $installer.'PKG-INSTALLER'.STARTUP.MIFPATH
-        If ($MifFilePath -eq "") {
+        If ([string]::IsNullOrWhiteSpace($MifFilePath)) {
             $MifFilePath = "$((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\SMS\Client\Configuration\Client Properties")."NOIDMIF Directory")"
         }
-        $MifFileName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).mif"
+        $Lang = $($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).Substring(0,3).ToUpper()
+        $MifFileName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$($Lang).mif"
         If (($installer.'PKG-INSTALLER'.STARTUP.MIFFILE -eq "true") -and ($ExecutionString -like "SETUP*")) {
-            $Error.Clear()
-            Try {
-                New-Item -ItemType "directory" -Path $MifFilePath -Force -ErrorAction Stop
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Component" 
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "NAME = ""Workstation""" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Group NAME = ""Installed Package"" ID = 1 CLASS = ""PACKAGE""" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Description"" ID = 1 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION)"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Version"" ID = 2 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.VERSION)"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Manufacturer"" ID = 3 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER)"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Language"" ID = 4 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE)"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Package Version"" ID = 5 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.PACKAGEVERSION)"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Package Number"" ID = 6 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Install Account"" ID = 7 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($myWindowsPrincipal.Identity.Name)"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Installation Time"" ID = 8 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$(Get-Date -Format "yyyy-MM-dd HH-mm-ss")"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "Start Attribute NAME = ""Result Codes"" ID = 9 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$MifResultcodes"" End Attribute" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "End Group" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "" -Append
-                Out-File -FilePath "$MifFilePath\$MifFileName" -InputObject "End Component" -Append
-                Write-Log "$LogPath$LogFileName" -LogContent "MIF file ""$MifFilePath\$MifFileName"" has been created"
-            }
-            Catch { Write-Log "$LogPath$LogFileName" -LogContent "Error: MIF file ""$MifFilePath\$MifFileName"" could not be created: $Error" }
+			New-Item -ItemType "directory" -Path $MifFilePath -Force -ErrorAction Stop
+			$OutText = "Start Component
+NAME = ""Workstation""
+
+Start Group NAME = ""Installed Package"" ID = 1 CLASS = ""PACKAGE""
+
+Start Attribute NAME = ""Description"" ID = 1 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.DESCRIPTION)"" End Attribute
+Start Attribute NAME = ""Version"" ID = 2 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.VERSION)"" End Attribute
+Start Attribute NAME = ""Manufacturer"" ID = 3 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.MANUFACTURER)"" End Attribute
+Start Attribute NAME = ""Language"" ID = 4 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE)"" End Attribute
+Start Attribute NAME = ""Package Version"" ID = 5 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.PACKAGEVERSION)"" End Attribute
+Start Attribute NAME = ""Package Number"" ID = 6 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)"" End Attribute
+Start Attribute NAME = ""Install Account"" ID = 7 STORAGE = SPECIFIC TYPE = STRING(100) VALUE = ""$($myWindowsPrincipal.Identity.Name)"" End Attribute
+Start Attribute NAME = ""Installation Time"" ID = 8 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$(Get-Date -Format "yyyy-MM-dd HH-mm-ss")"" End Attribute
+Start Attribute NAME = ""Result Codes"" ID = 9 STORAGE = SPECIFIC TYPE = STRING(25) VALUE = ""$MifResultcodes"" End Attribute
+
+End Group
+
+End Component"
+			If (Test-Path "$MifFilePath\$MifFileName") {Remove-Item "$MifFilePath\$MifFileName"}
+			$MifFileResult = Set-Content -Path "$MifFilePath\$MifFileName" -Value $OutText -PassThru
+			If ($MifFileResult) {Write-Log "$LogPath$LogFileName" -LogContent "MIF file ""$MifFilePath\$MifFileName"" has been created"}
+            Else { Write-Log "$LogPath$LogFileName" -LogContent "Error: MIF file ""$MifFilePath\$MifFileName"" could not be created" }
         }
         If ($ExecutionString -like "UNINSTALL*") {
             #Delete the MIF file
+			$Error.Clear()
             Try {
                 Remove-Item "$MifFilePath\$MifFileName" -Force -ErrorAction SilentlyContinue
                 Write-Log "$LogPath$LogFileName" -LogContent "MIF file ""$MifFilePath\$MifFileName"" has been removed"
