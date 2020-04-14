@@ -1,7 +1,7 @@
 # Package-Installer
 
   This Script is made to simplify installations with SCCM or any other Windows bases Software distribution Tool.
-  The focus of this tool is to have a simple Tool that is simple to understand, maintain and support.
+  The focus of this tool is to have a Tool that is simple to understand, maintain and support.
   This Script can be used to wrap multiple installation files into a single XML file, instead using a batch.
   It has a function to check for running processes and shows a message to end the process.
   At the end it can restart the PC if required and requested. 
