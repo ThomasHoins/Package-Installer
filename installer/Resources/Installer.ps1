@@ -315,7 +315,7 @@ Function Write-RegEntry {
     param (
         [string]$MifResultcodes
     )
-    $RegPath = "HKLM:\$($installer.'PKG-INSTALLER'.STARTUP.REGISTRYPATH)"
+    $RegPath = "$($installer.'PKG-INSTALLER'.STARTUP.REGISTRYPATH)"
     $Lang = ($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).Substring(0, 3)
     $KeyName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$Lang"
 
