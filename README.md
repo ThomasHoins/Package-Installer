@@ -34,12 +34,19 @@ different SCCM infrastructures.
 Usually you would use this tool in the following structure (asuming we are packaging 7zip)
 
 Igor Pavlov_7-Zip\Resources
+
 Igor Pavlov_7-Zip\Installer.xml
+
 Igor Pavlov_7-Zip\Installer.cmd
+
 Igor Pavlov_7-Zip\Resources\Installer.ps1
+
 Igor Pavlov_7-Zip\Resources\Logo.png
+
 Igor Pavlov_7-Zip\Resources\LogoSmall.png
+
 Igor Pavlov_7-Zip\Resources\Main.xaml
+
 Igor Pavlov_7-Zip\Setup\7z.msi
 
 In this case you would only need to modify the installer.xml (see Documentation inside the Template) to point to the 7z.msi and
