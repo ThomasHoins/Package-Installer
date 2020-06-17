@@ -34,6 +34,7 @@ https://github.com/ThomasHoins/Package-Installer
 .NOTES
     Version:        2.2.0
     Author:         Thomas Hoins, Markus Belle 
+    Contributors:   Michael Zastrow
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
     Purpose/Change: Initial script development
