@@ -2,97 +2,104 @@
 <PKG-INSTALLER>
 
 	<STARTUP>
-		<TITLE>Datagroup Software Deployment Service</TITLE> 				<!-- Window Title The title of the Installer Window-->
+		<TITLE>Datagroup Software Deployment Service</TITLE> 						<!-- Window Title The title of the Installer Window-->
 		<REQUIREOS>Windows 7;Windows 8;Windows 10;Server 2012; Server 2016</REQUIREOS> <!-- Required OS matches the part in Windows Information / Edition  -->
-		<ONLYX64>false</ONLYX64>											<!-- true/false run only on X64 Systems-->
-		<REQUIREDRIVE>false</REQUIREDRIVE>									<!-- true/false is not implemented-->
-		<REQUIREADMINRIGHTS>false</REQUIREADMINRIGHTS>						<!-- true/false self explaining-->
-		<CHECKPENDINGFILES>false</CHECKPENDINGFILES>   						<!-- true/false is not implemented-->
-		<SOURCEDIR></SOURCEDIR>												<!-- true/false Differnt Source Dir, Default is the directory of Installer.XML. is not implemented-->
+		<ONLYX64>false</ONLYX64>													<!-- true/false run only on X64 Systems-->
+		<REQUIREDRIVE>false</REQUIREDRIVE>											<!-- true/false is not implemented-->
+		<REQUIREADMINRIGHTS>false</REQUIREADMINRIGHTS>								<!-- true/false self explaining-->
+		<CHECKPENDINGFILES>false</CHECKPENDINGFILES>   								<!-- true/false is not implemented-->
+		<SOURCEDIR></SOURCEDIR>														<!-- true/false Differnt Source Dir, Default is the directory of Installer.XML. is not implemented-->
 
+<<<<<<< HEAD
 		<MIFFILE>true</MIFFILE>												<!-- true/false Create a MIF file-->
 		<MIFPATH>C:\Windows\CCM\Inventory\noidmifs</MIFPATH>				<!-- Path/Empty Path for the MIF file. No Environment Substitution here!. If empty or missing, we will use the defaultfor SCCM MIF. Should always be set for TS Packages-->
+=======
+		<MIFFILE>true</MIFFILE>														<!-- true/false Create a MIF file, set to false for USER Mode Installation-->
+		<MIFPATH>C:\Windows\CCM\Inventory\noidmifs</MIFPATH>						<!-- Path/Empty Path for the MIF file. No Environment Substitution here!. If empty or missing, we will use the defaultfor SCCM MIF. Should always be set for TS Packages-->
+>>>>>>> 963d9e4b1ab0a539ec75af9acf44033d454b5206
 
-		<LOGFILE>true</LOGFILE>												<!-- true/false Create a LOG file-->
-		<LOGPATH>C:\Temp\support\logs\</LOGPATH>							<!-- Path for the LOG file. No Environment Substitution here!. Mandatory if you set LOGFILE to true, otherwise it would try to write, where it is running-->
-		<LOGFILENAME>XXX_Test Log File.log</LOGFILENAME>					<!-- LOG file name, mandatory if you set LOGFILE to true -->
+		<LOGFILE>true</LOGFILE>														<!-- true/false Create a LOG file-->
+		<LOGPATH>C:\Program Files\support\logs\</LOGPATH>							<!-- Path for the LOG file. No Environment Substitution here!. Mandatory if you set LOGFILE to true, otherwise it would try to write, where it is running-->
+		<!--LOGPATH>%TEMP%\</LOGPATH-->												<!-- Path for the USER Mode Installation -->
+		<LOGFILENAME>XXX_Test Log File.log</LOGFILENAME>							<!-- LOG file name, mandatory if you set LOGFILE to true -->
 
-		<REGISTRY>true</REGISTRY>											<!-- true/false Log installation to Registry -->
-		<REGISTRYPATH>Software\Support\Installed Packages\</REGISTRYPATH>   <!-- only local Machine Path, Path to log to -->
+		<REGISTRY>true</REGISTRY>													<!-- true/false Log installation to Registry -->
+		<REGISTRYPATH>HKLM:\Software\Support\Installed Packages\</REGISTRYPATH>		<!-- Machine Installation -->
+		<!--REGISTRYPATH>HKCU:\Software\Support\Installed Packages\</REGISTRYPATH--><!-- User Installation -->
 		
-		<APPICONPATH></APPICONPATH>											<!-- Alternative path for AppIcon.png .\Path | .\Path\Filename.ext Default .\Info\AppIcon.png also changes Description path-->
-		<USEAPPICON>true</USEAPPICON>										<!-- use the App Icon, if \Resourced\AppIcon.png exists  -->
+		<APPICONPATH></APPICONPATH>													<!-- Alternative path for AppIcon.png .\Path | .\Path\Filename.ext Default .\Info\AppIcon.png also changes Description path-->
+		<USEAPPICON>true</USEAPPICON>												<!-- use the App Icon, if \Resourced\AppIcon.png exists  -->
 		
-        <NOGUI>false</NOGUI>												<!-- true/false Show Installation Window.  Not good implemented, will blink at start -->
-		<INTERACTIVE>false</INTERACTIVE>									<!-- true/false run the Installation in foreground so the user can interact. Not implemented -->
-		<INVENTORY>%programfiles%\support\scripts\inventory.cmd</INVENTORY> <!-- Path to inventory executable (%programfiles%\support\scripts\inventory.cmd), Will run the executable, to create a new inventory entry.-->
-		<UNINSTALLENABLED>true</UNINSTALLENABLED>							<!-- true/false/empty  Allow uninstallation, default is true.-->
+        <NOGUI>false</NOGUI>														<!-- true/false Show Installation Window.  Not good implemented, will blink at start -->
+		<INTERACTIVE>false</INTERACTIVE>											<!-- true/false run the Installation in foreground so the user can interact. Not implemented -->
+		<INVENTORY>%programfiles%\support\scripts\inventory.cmd</INVENTORY> 		<!-- Path to inventory executable (%programfiles%\support\scripts\inventory.cmd), Will run the executable, to create a new inventory entry.-->
+		<UNINSTALLENABLED>true</UNINSTALLENABLED>									<!-- true/false/empty  Allow uninstallation, default is true.-->
 		
-		<CHECKMSIInstaller>false</CHECKMSIInstaller> 						<!-- Installer must run under admin rights!. Not implemented -->
-		<CHECKMSIInstallerRetries>4</CHECKMSIInstallerRetries> 				<!-- Number of retries. Not implemented -->
-		<CHECKMSIInstallerTimeout>30</CHECKMSIInstallerTimeout> 			<!-- Retry Seconds. Not implemented -->
+		<CHECKMSIInstaller>false</CHECKMSIInstaller> 								<!-- Installer must run under admin rights!. Not implemented -->
+		<CHECKMSIInstallerRetries>4</CHECKMSIInstallerRetries> 						<!-- Number of retries. Not implemented -->
+		<CHECKMSIInstallerTimeout>30</CHECKMSIInstallerTimeout> 					<!-- Retry Seconds. Not implemented -->
 		
-		<XMLVERSION>2.00</XMLVERSION>										<!-- XML Version, for Log File and legacy purposes -->
+		<XMLVERSION>2.00</XMLVERSION>												<!-- XML Version, for Log File and legacy purposes -->
 	</STARTUP>
 
-	<PRODUCT>																<!-- Product Information, mostly for logging -->	
+	<PRODUCT>																		<!-- Product Information, mostly for logging -->	
 		<DESCRIPTION>Installer Test</DESCRIPTION>						
 		<MANUFACTURER>Vendor</MANUFACTURER>					
-		<LANGUAGE>English</LANGUAGE>							
+		<LANGUAGE>ENG</LANGUAGE>													<!-- ENG, DEU,MUI FRA etc. -->
 		<VERSION>1.10.0</VERSION>								
 		<PACKAGEVERSION>1.0</PACKAGEVERSION>						
 		<ASSETNUMBER>DG-0000</ASSETNUMBER>						
 	</PRODUCT>
 
 	<SETUP>
-		<EXE></EXE>															<!-- Executable with Parameters. RC="false" prevents the result codes. RE: Retry. RC and RE are not yet implemented.-->
-		<EXE></EXE>															<!-- Executable with Parameters -->
+		<EXE></EXE>																	<!-- Executable with Parameters. RC="false" prevents the result codes. RE: Retry. RC and RE are not yet implemented.-->
+		<EXE></EXE>																	<!-- Executable with Parameters -->
 	</SETUP>
     
 	<SETUP_X64>
-		<EXE>ping.exe localhost -n 3</EXE>									<!-- Executable with Parameters -->
+		<EXE></EXE>											<!-- Executable with Parameters -->
 		<EXE></EXE>
 	</SETUP_X64>
 
 	<REPAIR>
-		<EXE></EXE>															<!-- Executable with Parameters -->
-		<EXE></EXE>															<!-- Executable with Parameters -->
+		<EXE></EXE>																	<!-- Executable with Parameters -->
+		<EXE></EXE>																	<!-- Executable with Parameters -->
 	</REPAIR>
     
 	<REPAIR_X64>
-		<EXE></EXE>															<!-- Executable with Parameters -->
+		<EXE></EXE>																	<!-- Executable with Parameters -->
 	</REPAIR_X64>
 		
 	<CHECK>
-		<EXE></EXE>															<!-- Process Name. The Script will check for a running process with this name, if the user presses OK 5x, the process will be killed -->
-		<EXE></EXE>															<!-- Process Name -->
-		<MESSAGEBOXTEXT>Bitte schliessen sie das Program</MESSAGEBOXTEXT>	<!-- Text for Check message. You can have multiple lines, check if it fits inside the window-->	
-		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 			<!-- Next Line -->
-		<COUNTDOWNTEXT>Waiting for</COUNTDOWNTEXT>							<!-- Optional text, if Autokill is set to true, this text will be displayed. Timeout is 60 sec. -->
-		<COUNTDOWNUNIT>sec.</COUNTDOWNUNIT>									<!-- Optional unit, if you need a differnt language. Both Messages have english default messages -->
-		<AUTOKILL>true</AUTOKILL>											<!-- true/false, Enables Autokill with a timeout of 60 sec. -->
+		<EXE></EXE>																	<!-- Process Name. The Script will check for a running process with this name, if the user presses OK 5x, the process will be killed -->
+		<EXE></EXE>																	<!-- Process Name -->
+		<MESSAGEBOXTEXT>Bitte schliessen sie das Program</MESSAGEBOXTEXT>			<!-- Text for Check message. You can have multiple lines, check if it fits inside the window-->	
+		<MESSAGEBOXTEXT>Please close the program</MESSAGEBOXTEXT> 					<!-- Next Line -->
+		<COUNTDOWNTEXT>Waiting for</COUNTDOWNTEXT>									<!-- Optional text, if Autokill is set to true, this text will be displayed. Timeout is 60 sec. -->
+		<COUNTDOWNUNIT>sec.</COUNTDOWNUNIT>											<!-- Optional unit, if you need a differnt language. Both Messages have english default messages -->
+		<AUTOKILL>true</AUTOKILL>													<!-- true/false, Enables Autokill with a timeout of 60 sec. -->
 	</CHECK>
 
 	<UNINSTALL>
 		<EXE RC="true" RE="0" ></EXE>		<!-- Executable with Parameters. RC="false" prevents the result codes. RE: Retry. RC and RE are not yet implemented.-->
-		<EXE></EXE>															<!-- Executable with Parameters -->
+		<EXE></EXE>																	<!-- Executable with Parameters -->
 	</UNINSTALL>
 	
 	<UNINSTALL_X64>
-		<EXE></EXE>															<!-- Executable with Parameters -->
-		<EXE></EXE>															<!-- Executable with Parameters -->
+		<EXE></EXE>																	<!-- Executable with Parameters -->
+		<EXE></EXE>																	<!-- Executable with Parameters -->
     </UNINSTALL_X64>
 
 	<EXIT>
-		<MESSAGEBOX_ACTIVE>false</MESSAGEBOX_ACTIVE> 						<!-- true/false. Enables the Messagebox after installation -->
-		<TIMEOUT></TIMEOUT> 												<!-- Timeout for the Messagebox -->
-		<AUTOREBOOT>false</AUTOREBOOT>										<!-- Enables automatic reboot -->
+		<MESSAGEBOX_ACTIVE>false</MESSAGEBOX_ACTIVE> 								<!-- true/false. Enables the Messagebox after installation -->
+		<TIMEOUT></TIMEOUT> 														<!-- Timeout for the Messagebox -->
+		<AUTOREBOOT>false</AUTOREBOOT>												<!-- Enables automatic reboot -->
 	 	<MESSAGEBOXTEXT>Um die Installation des Programms abzuschliessen ist ein Neustart erforderlich. Dieser wird nicht automatisch durchgeführt!</MESSAGEBOXTEXT>	<!-- Text for Messagebox. You can have multiple lines, check if it fits inside the window-->	
-		<MESSAGEBOXTEXT></MESSAGEBOXTEXT> 									<!--Next Line -->
-		<COUNTDOWNTEXT></COUNTDOWNTEXT>										<!-- Optional text, if Autokill is set to true, this text will be displayed. Timeout is 60 sec. -->
-		<COUNTDOWNUNIT></COUNTDOWNUNIT>										<!-- Optional unit, if you need a differnt language. Both Messages have english default messages -->
-		<OSDFLAG_MODE>process</OSDFLAG_MODE> 								<!-- OSD Detect MODE= "registry" , "file" , "process". Will check if we are running in Task Sequence and suppress the Messagebox -->
-		<OSDFLAG>HKLM\Software\Support;osd;running</OSDFLAG>  				<!-- OSD Flag prevent Messagebox registry=path;name file=filepath process=processname-->
+		<MESSAGEBOXTEXT></MESSAGEBOXTEXT> 											<!--Next Line -->
+		<COUNTDOWNTEXT></COUNTDOWNTEXT>												<!-- Optional text, if Autokill is set to true, this text will be displayed. Timeout is 60 sec. -->
+		<COUNTDOWNUNIT></COUNTDOWNUNIT>												<!-- Optional unit, if you need a differnt language. Both Messages have english default messages -->
+		<OSDFLAG_MODE>process</OSDFLAG_MODE> 										<!-- OSD Detect MODE= "registry" , "file" , "process". Will check if we are running in Task Sequence and suppress the Messagebox -->
+		<OSDFLAG>HKLM\Software\Support;osd;running</OSDFLAG>  						<!-- OSD Flag prevent Messagebox registry=path;name file=filepath process=processname-->
 	</EXIT>
 	
 </PKG-INSTALLER>

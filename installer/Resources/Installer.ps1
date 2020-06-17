@@ -32,7 +32,7 @@ https://github.com/ThomasHoins/Package-Installer
   Log file stored under %LOGFILENAME%.log, can be defined in the installer XML
   
 .NOTES
-    Version:        2.1.9
+    Version:        2.2.0
     Author:         Thomas Hoins, Markus Belle 
     Company:        DATAGROUP Hamburg GmbH
     Creation Date:  16.09.2019
@@ -57,6 +57,7 @@ History:
     2.1.7     27.11.2019    Changes to the Title Bar, disable close Button (TH)
     2.1.8     04.12.2019    Changed the AppIcon Path and added a entry in the Installer.xml, changed the structure (TH)
     2.1.9     27.01.2020    Fixed some issues with the Write-Mif function
+    2.2.0     01.04.2020    [MZ] Fixed some issues with User Mode Installation User logs now in %temp% folder
 Known Bugs:
   
 
@@ -81,7 +82,7 @@ Param(
     [String]$XMLPath
 )
 
-$SCCMInstallerVersion = "2.1.9"
+$SCCMInstallerVersion = "2.2.0"
 $ExecutionString = Switch ($Option) {
     "/i" { "SETUP" }
     "/u" { "UNINSTALL" }
@@ -209,7 +210,8 @@ $RequireAdmin = Switch ($installer.'PKG-INSTALLER'.STARTUP.REQUIREADMINRIGHTS) {
     "false" { $false }
     default { $false }
     }
-$LogPath = $installer.'PKG-INSTALLER'.STARTUP.LOGPATH
+	
+$LogPath = [System.Environment]::ExpandEnvironmentVariables($installer.'PKG-INSTALLER'.STARTUP.LOGPATH)
 $LogFileName = $installer.'PKG-INSTALLER'.STARTUP.LOGFILENAME
 $XMLVersion = $installer.'PKG-INSTALLER'.STARTUP.XMLVERSION
 $LoggedOnUserName = (Get-WmiObject -Class win32_computersystem -ComputerName $env:COMPUTERNAME).UserName
@@ -268,7 +270,7 @@ Function Write-Mif {
     param (
         [string]$MifResultcodes
     )
-    If ($MifResultcodes.Length>25){$MifResultcodes = $MifResultcodes.Substring(0,25)}
+    If ($MifResultcodes.Length -gt 25){$MifResultcodes = $MifResultcodes.Substring(0,25)}
     If ($globaL:MifEnabled) {
         $MifFilePath = $installer.'PKG-INSTALLER'.STARTUP.MIFPATH
         If ([string]::IsNullOrWhiteSpace($MifFilePath)) {
@@ -317,7 +319,7 @@ Function Write-RegEntry {
     param (
         [string]$MifResultcodes
     )
-    $RegPath = "HKLM:\$($installer.'PKG-INSTALLER'.STARTUP.REGISTRYPATH)"
+    $RegPath = "$($installer.'PKG-INSTALLER'.STARTUP.REGISTRYPATH)"
     $Lang = ($installer.'PKG-INSTALLER'.PRODUCT.LANGUAGE).Substring(0, 3)
     $KeyName = "$($installer.'PKG-INSTALLER'.PRODUCT.ASSETNUMBER)-$Lang"
 
@@ -418,6 +420,7 @@ Function Invoke-Inventory {
         Write-Log "$LogPath$LogFileName" -LogContent "Error: Inventory could not be started! $error[0].Exception.Message"
     } 
 }
+
 
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 #OK Message Button Action
