@@ -57,7 +57,7 @@ History:
     2.1.7     27.11.2019    Changes to the Title Bar, disable close Button (TH)
     2.1.8     04.12.2019    Changed the AppIcon Path and added a entry in the Installer.xml, changed the structure (TH)
     2.1.9     27.01.2020    Fixed some issues with the Write-Mif function
-    2.2.0     01.04.2020    [MZ] Fixed some issues with User Mode Installation User logs now in %temp% folder
+    2.2.0     01.04.2020    Fixed some issues with User Mode Installation User logs now in %temp% folder (MZ)
 Known Bugs:
   
 
