@@ -1,0 +1,16 @@
+#PRAGMA AUTORECOVER
+[SMS_Report (TRUE), 
+SMS_Group_Name ("Installed Package"),
+SMS_Class_ID ("Package")]
+class InstalledPackage : SMS_Class_Template
+{
+	[key] string PackageNumber;
+    string Description;
+    string InstallAccount;
+    string InstallationTime;
+    string Language;
+    string Manufacturer;
+    string PackageVersion;
+    string ResultCodes;
+    string Version;
+};
