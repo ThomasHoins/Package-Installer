@@ -60,6 +60,7 @@ History:
     2.1.9     27.01.2020    Fixed some issues with the Write-Mif function
     2.2.0     01.04.2020    Fixed some issues with User Mode Installation User logs now in %temp% folder (MZ)
     2.2.1     14.07.2020    Adding MOF file to add Hardware inventory class in SCCM CB Changed MIF File creation to match MOF file (MB)
+    2.2.2     07.09.2020    BugFix max. Parameters for installation set to 99 (MB)
 Known Bugs:
   
 
@@ -597,9 +598,9 @@ $Form.Add_ContentRendered( {
                 $Progress.Value = ($x / $PackageCount) * 100
                 Update-GUI
                 $Return = $null
-                If ($CommandLine[1..9] -ne "") {
+                If ($CommandLine[1..99] -ne "") {
                     $error.clear()
-                    $Return = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..9] -PassThru -Wait -ErrorAction SilentlyContinue)
+                    $Return = (Start-Process $CommandLine[0] -ArgumentList $CommandLine[1..99] -PassThru -Wait -ErrorAction SilentlyContinue)
                 }
                 ElseIf ($CommandLine) {
                     $error.clear()
